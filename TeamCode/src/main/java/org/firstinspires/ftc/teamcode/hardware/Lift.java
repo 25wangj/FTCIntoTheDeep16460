@@ -61,8 +61,7 @@ public class Lift implements Subsystem {
     public static final LiftPosition liftSpecimen = new LiftPosition(8, 0, 0);
     public static final LiftPosition liftHighBucket = new LiftPosition(30.5, 0, pivotUp);
     public static final LiftPosition liftLowBucket = new LiftPosition (15, 0, pivotUp);
-    public static final LiftPosition liftLowSideChamber = new LiftPosition(6, PI/2, pivotUp);
-    public static final LiftPosition liftHighSideChamber = new LiftPosition(19, PI/2, pivotUp);
+    public static final LiftPosition liftHighSideChamber = new LiftPosition(19.5, PI/2, pivotUp);
     public static final LiftPosition liftHighBackChamber = new LiftPosition(13, 0, pivotUp);
     public static final LiftPosition climb1 = new LiftPosition(17.5, 0, pivotUp);
     public static final LiftPosition climb2 = new LiftPosition(16, 0, pivotUp);
@@ -209,14 +208,14 @@ public class Lift implements Subsystem {
             }
         }, t -> {}, (t, b) -> {}, t -> t > restTime(), this);
     }
-    public Command goBack() {
+    public Command goBack(boolean bucket) {
         return new FnCommand(t -> {
             turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
                     t, new MotionState(0));
             if (pivotProfile.state(t).x == 0) {
                 liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
                         turretProfile.tf(), new MotionState(0));
-            } else if (pivotProfile.state(t).x > PI / 2) {
+            } else if (bucket) {
                 MotionProfile pivotBackProfile = AsymProfile.extendAsym(pivotProfile,
                         pivotBackConstraints, t, new MotionState(PI/2));
                 liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
@@ -238,7 +237,7 @@ public class Lift implements Subsystem {
         return new FnCommand(t -> {
             turretPidf.setCoeffs(new PidfCoefficients(5, 0, 0));
             liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
-                t, new MotionState(liftProfile.state(t).x - 4.5));}, t -> {},
+                t, new MotionState(liftProfile.state(t).x - 5));}, t -> {},
                 (t, b) -> turretPidf.setCoeffs(turretCoeffs), t -> t > restTime(), this);
     }
     public Command adjust(Vec v, double dt) {
@@ -318,7 +317,7 @@ public class Lift implements Subsystem {
                 pivot.setPower(pivotPidf.get());
             }
             if (!Double.isNaN(zeroTime)) {
-                double power = (t - zeroTime < 0.25) ? -0.75 : -0.25;
+                double power = (t - zeroTime < 0.25) ? -0.5 : -0.25;
                 liftR.setPower(power);
                 liftL.setPower(power);
                 liftPidf.reset();

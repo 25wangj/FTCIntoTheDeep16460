@@ -32,10 +32,6 @@ public class TeleopOneDriver extends CommandOpMode {
                 if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == SIDE_CHAMBER) {
                     robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber);
                 }}),
-            RisingEdgeDetector.listen(() -> gamepad1.y, t -> {
-                if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == SIDE_CHAMBER) {
-                    robot.stateMachine.transition(SIDE_CHAMBER, liftLowSideChamber);
-                }}),
             RisingEdgeDetector.listen(() -> gamepad1.right_bumper, t -> {
                 if (robot.stateMachine.state() == INTAKE || robot.stateMachine.state() == EXTEND_GRAB) {
                     robot.stateMachine.transition(GRABBED);

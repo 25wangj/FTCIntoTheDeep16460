@@ -54,7 +54,7 @@ public class Bucket extends AbstractAutonomous {
                     .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
                     .setMoveConstraints(dropConstraints)
                     .lineTo(drop)
-                    .marker(0, 0.55, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
+                    .marker(0, 0.6, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
                     .build(scheduler);
             telemetry.addData("Configuration", "Bucket Sample");
         } else {

@@ -14,17 +14,26 @@ import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.Subsystem;
 import org.firstinspires.ftc.teamcode.command.RisingEdgeDetector;
 @Photon
-@Disabled
 @TeleOp(name = "ServoTest")
 public class ServoTest extends CommandOpMode {
-    private Servo servo;
+    private ServoImplEx servo1;
+    private ServoImplEx servo2;
+    private ServoImplEx arm;
     private double pos;
     @Override
     public void initOpMode() {
-        servo = hardwareMap.get(ServoImplEx.class, "ptoL");
+        servo1 = hardwareMap.get(ServoImplEx.class, "diffR");
+        servo2 = hardwareMap.get(ServoImplEx.class, "diffL");
+        arm = hardwareMap.get(ServoImplEx.class, "arm");
+        arm.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        servo1.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        servo2.setPwmRange(new PwmControl.PwmRange(500, 2500));
         pos = 0.5;
+        arm.setPosition(armZero);
         Subsystem servoSubsystem = (t, b) -> {
-            servo.setPosition(pos);
+            servo1.setPosition(pos);
+            servo2.setPosition(pos);
+            //arm.setPosition(pos);
             telemetry.addData("Position", pos);
         };
         register(servoSubsystem);

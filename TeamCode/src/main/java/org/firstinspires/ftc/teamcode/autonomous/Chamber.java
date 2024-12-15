@@ -18,17 +18,18 @@ import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
 public class Chamber extends AbstractAutonomous {
     private AsymConstraints intakeConstraints = new AsymConstraints(10, 30, 30);
     private AsymConstraints pushConstraints = new AsymConstraints(30, 40, 40);
-    private AsymConstraints slowConstraints = new AsymConstraints(40, 50, 50);
+    private AsymConstraints toConstraints = new AsymConstraints(30, 40, 40);
+    private AsymConstraints fromConstraints = new AsymConstraints(50, 60, 50);
     private AsymConstraints pushTurnConstraints = new AsymConstraints(4, 8, 4);
     private Pose start = new Pose(-6.5, 63, PI/2);
     private Pose specimen1 = new Pose(-6.5, 31, PI/2);
-    private Pose specimen2 = new Pose(-4, 30, 5*PI/6);
+    private Pose specimen2 = new Pose(-8, 30, 5*PI/6);
     private Pose sample1 = new Pose(-32, 42, 5*PI/4);
     private Pose sample2 = new Pose(-42.5, 42, 5*PI/4);
     private Pose sample3 = new Pose(-53, 42, 5*PI/4);
     private Pose drop1 = new Pose(-31.5, 44, 5*PI/6);
     private Pose drop2 = new Pose(-42, 44, 5*PI/6);
-    private Pose preIntake = new Pose(-36, 54, 5*PI/6);
+    private Pose preIntake = new Pose(-38, 55, 5*PI/6);
     private Pose intake = new Pose(-44, 59, 5*PI/6);
     private LiftPosition liftPush1 = new LiftPosition(20, PI/4, 0);
     private LiftPosition liftPush2 = new LiftPosition(20, 0, 0);
@@ -41,6 +42,7 @@ public class Chamber extends AbstractAutonomous {
                 .lineTo(specimen1)
                 .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftHighBackChamber))
                 .marker(1, -0.15, t -> robot.stateMachine.transition(INTAKE))
+                .pause(0.25)
                 .setMoveConstraints(pushConstraints)
                 .splineTo(sample1, sample1.h)
                 .marker(0, 1.1, new ParCommand(
@@ -79,27 +81,28 @@ public class Chamber extends AbstractAutonomous {
                             robot.arm.setArm(armGrab);
                             robot.arm.setClaw(false);
                             robot.intake.set(0.3);}),
-                        robot.lift.goBack()))
+                        robot.lift.goBack(false)))
                 .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
                 .build(scheduler);
         Command traj2 = new TrajCommandBuilder(robot.drive, intake)
-                .setMoveConstraints(slowConstraints)
+                .setMoveConstraints(toConstraints)
                 .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber))
                 .lineTo(specimen2.vec())
                 .marker(1, -0.15, t -> robot.stateMachine.transition(INTAKE))
                 .setVel(10)
+                .setMoveConstraints(fromConstraints)
                 .lineTo(preIntake.vec())
                 .setMoveConstraints(intakeConstraints)
                 .lineTo(intake.vec())
                 .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
                 .build(scheduler);
         Command traj3 = new TrajCommandBuilder(robot.drive, intake)
-                .setMoveConstraints(slowConstraints)
+                .setMoveConstraints(toConstraints)
                 .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber))
                 .lineTo(specimen2.vec())
                 .marker(1, -0.15, t -> robot.stateMachine.transition(INTAKE))
                 .resetConstraints()
-                .lineTo(intake.vec())
+                .lineTo(preIntake.vec())
                 .build(scheduler);
         scheduler.schedule(new SeqCommand(traj1, new RepeatCommand(traj2, 3), traj3, FnCommand.once(t -> end())));
         robot.drive.setPose(start);

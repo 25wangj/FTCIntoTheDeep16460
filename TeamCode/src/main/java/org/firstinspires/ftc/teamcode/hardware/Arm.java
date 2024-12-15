@@ -11,10 +11,11 @@ import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.Subsystem;
 public class Arm implements Subsystem {
     public static class ArmPosition {
-        public static final double armZero = 0.58;
-        public static final double armRange = 3.16;
-        public static final double diffZero = 0.3;
-        public static final double diffRange = 5.76;
+        public static final double armZero = 0.59;
+        public static final double armRange = 2.59;
+        public static final double diffZero = 0.26;
+        public static final double diffRange = 6.11;
+        public static final double diffRatio = 0.833;
         public final double armAng;
         public final double wristAng;
         public final double wristRot;
@@ -26,15 +27,16 @@ public class Arm implements Subsystem {
             this.wristAng = wristAng;
             this.wristRot = wristRot;
             armPos = armAng / armRange + armZero;
-            diffRPos = (wristAng + wristRot + armAng) / diffRange + diffZero;
-            diffLPos = (wristAng - wristRot + armAng) / diffRange + diffZero;
+            diffRPos = ((wristAng + wristRot) * diffRatio + armAng) / diffRange + diffZero;
+            diffLPos = ((wristAng - wristRot) * diffRatio + armAng) / diffRange + diffZero;
         }
     }
     public static final double armUp = 0.35;
     public static final ArmPosition armRest = new ArmPosition(0, 0, 0);
     public static final ArmPosition armGrab = new ArmPosition(armUp, 0, 0);
     public static final ArmPosition armBucket = new ArmPosition(armUp, 1.10, 0);
-    public static final ArmPosition armSideChamber = new ArmPosition(0, 0.52, -1.31);
+    public static final ArmPosition armSideChamber1 = new ArmPosition(-0.35, 3.32, -1.83);
+    public static final ArmPosition armSideChamber2 = new ArmPosition(armUp, 3.32, -1.83);
     public static final ArmPosition armBackChamber = new ArmPosition(armUp, 2.79, 0);
     public static final ArmPosition armGrabbed = new ArmPosition(armUp, 1.89, 0);
     public static final double clawOpen = 0.08;
