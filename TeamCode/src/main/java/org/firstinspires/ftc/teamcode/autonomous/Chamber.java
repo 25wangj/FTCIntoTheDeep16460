@@ -41,15 +41,13 @@ public class Chamber extends AbstractAutonomous {
         Command traj1 = new TrajCommandBuilder(robot.drive, start)
                 .lineTo(specimen1)
                 .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftHighBackChamber))
-                .marker(1, -0.15, t -> robot.stateMachine.transition(INTAKE))
-                .pause(0.25)
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .setMoveConstraints(pushConstraints)
                 .splineTo(sample1, sample1.h)
                 .marker(0, 1.1, new ParCommand(
                         FnCommand.once(t -> {
                             robot.arm.setArm(armPushUp);
-                            robot.arm.setClaw(true);
-                            robot.intake.set(0);}),
+                            robot.arm.setClaw(true);}),
                         robot.lift.goTo(liftPush1)
                 ))
                 .pause(0.25)
@@ -78,17 +76,16 @@ public class Chamber extends AbstractAutonomous {
                 .lineTo(intake.vec())
                 .marker(new ParCommand(
                         FnCommand.once(t -> {
-                            robot.arm.setArm(armGrab);
-                            robot.arm.setClaw(false);
-                            robot.intake.set(0.3);}),
-                        robot.lift.goBack(false)))
+                            robot.arm.setArm(armGrab(0));
+                            robot.arm.setClaw(false);}),
+                        robot.lift.goBack(false, true)))
                 .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
                 .build(scheduler);
         Command traj2 = new TrajCommandBuilder(robot.drive, intake)
                 .setMoveConstraints(toConstraints)
                 .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber))
                 .lineTo(specimen2.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(INTAKE))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .setVel(10)
                 .setMoveConstraints(fromConstraints)
                 .lineTo(preIntake.vec())
@@ -100,7 +97,7 @@ public class Chamber extends AbstractAutonomous {
                 .setMoveConstraints(toConstraints)
                 .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber))
                 .lineTo(specimen2.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(INTAKE))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .resetConstraints()
                 .lineTo(preIntake.vec())
                 .build(scheduler);

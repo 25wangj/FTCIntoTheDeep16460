@@ -13,10 +13,10 @@ public class Scheduler {
     private Set<Command> commands = new HashSet<>();
     private Map<Subsystem, Command> subsystems = new HashMap<>();
     private Set<Listener> listeners = new HashSet<>();
-    private Queue<Command> added = new ArrayDeque<>();
-    private Queue<Command> canceled = new ArrayDeque<>();
-    private List<Command> finished = new ArrayList<>();
+    private Set<Command> added = new HashSet<>();
+    private Set<Command> finished = new HashSet<>();
     private ElapsedTime clock;
+    private double time = 0;
     private double lastTime = 0;
     public Scheduler() {
         this(new ElapsedTime());
@@ -25,7 +25,7 @@ public class Scheduler {
         this.clock = clock;
     }
     public double run(boolean active) {
-        double time = clock.seconds();
+        time = clock.seconds();
         for (Subsystem subsystem : subsystems.keySet()) {
             subsystem.update(time, active);
         }
@@ -35,36 +35,24 @@ public class Scheduler {
                     schedule(listener.getCommand());
                 }
             }
-            for (int i = canceled.size(); i > 0; i--) {
-                Command command = canceled.poll();
-                for (Subsystem subsystem : command.getSubsystems()) {
-                    subsystems.put(subsystem, null);
-                }
-                commands.remove(command);
-                command.end(time, true);
-            }
-            for (int i = added.size(); i > 0; i--) {
-                Command command = added.poll();
-                for (Subsystem subsystem : command.getSubsystems()) {
-                    subsystems.put(subsystem, command);
-                }
-                commands.add(command);
-                command.init(time);
-            }
             for (Command command : commands) {
                 if (command.done(time)) {
+                    for (Subsystem subsystem : command.getSubsystems()) {
+                        subsystems.put(subsystem, null);
+                    }
+                    command.end(time, false);
                     finished.add(command);
                 } else {
                     command.run(time);
                 }
             }
-            for (Command command : finished) {
-                for (Subsystem subsystem : command.getSubsystems()) {
-                    subsystems.put(subsystem, null);
+            for (Command command : added) {
+                if (!finished.contains(command)) {
+                    commands.add(command);
                 }
-                commands.remove(command);
-                command.end(time, false);
             }
+            commands.removeAll(finished);
+            added.clear();
             finished.clear();
         }
         return -lastTime + (lastTime = time);
@@ -85,24 +73,24 @@ public class Scheduler {
                 }
             }
         }
-        added.offer(command);
         cancel(toCancel.toArray(new Command[0]));
+        for (Subsystem subsystem : command.getSubsystems()) {
+            subsystems.put(subsystem, command);
+        }
+        command.init(time);
+        added.add(command);
         return true;
     }
     public void cancel(Command... toCancel) {
         for (Command command : toCancel) {
             if (commands.contains(command)) {
-                canceled.offer(command);
+                for (Subsystem subsystem : command.getSubsystems()) {
+                    subsystems.put(subsystem, null);
+                }
+                command.end(time, true);
+                finished.add(command);
             }
         }
-    }
-    public void cancelAll() {
-        for (Subsystem subsystem : subsystems.keySet()) {
-            subsystems.put(subsystem, null);
-        }
-        canceled.addAll(commands);
-        commands.clear();
-        added.clear();
     }
     public void register(Subsystem... toAdd) {
         for (Subsystem subsystem : toAdd) {
@@ -117,14 +105,6 @@ public class Scheduler {
             subsystems.remove(subsystem);
         }
     }
-    public void unregisterAll() {
-        for (Subsystem subsystem : subsystems.keySet()) {
-            if (using(subsystem)) {
-                throw new IllegalArgumentException("Subsystem in use by a command");
-            }
-        }
-        subsystems.clear();
-    }
     public boolean using(Subsystem system) {
         return subsystems.get(system) != null;
     }
@@ -133,9 +113,6 @@ public class Scheduler {
     }
     public void removeListener(Listener... toRemove) {
         listeners.removeAll(Arrays.asList(toRemove));
-    }
-    public void clearListeners() {
-        listeners.clear();
     }
     public Set<Command> getCommands() {
         return commands;

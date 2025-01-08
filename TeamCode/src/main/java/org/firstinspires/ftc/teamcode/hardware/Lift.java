@@ -54,12 +54,11 @@ public class Lift implements Subsystem {
         }
     }
     public static final double liftToDrive = -1.66;
-    public static final double liftXMin = 5.5;
+    public static final double liftXMin = 6;
     public static final double liftXMax = 24;
     public static final double liftYMax = 5.5;
     public static final double pivotUp = 1.71;
-    public static final LiftPosition liftSpecimen = new LiftPosition(8, 0, 0);
-    public static final LiftPosition liftHighBucket = new LiftPosition(30.5, 0, pivotUp);
+    public static final LiftPosition liftHighBucket = new LiftPosition(31, 0, pivotUp);
     public static final LiftPosition liftLowBucket = new LiftPosition (15, 0, pivotUp);
     public static final LiftPosition liftHighSideChamber = new LiftPosition(19.5, PI/2, pivotUp);
     public static final LiftPosition liftHighBackChamber = new LiftPosition(13, 0, pivotUp);
@@ -107,7 +106,7 @@ public class Lift implements Subsystem {
     public static final PidfCoefficients liftClimbCoeffs = new PidfCoefficients(0.5, 0.5, 0, a -> {
        MotionState liftState = (MotionState)a[1];
        return -0.25 + 0.02 * liftState.v;});
-    public static double turretKp = 0.5;
+    public static double turretKp = 1;
     public static double turretKi = 2;
     public static double turretKd = 0;
     public static double turretKs = 0.1;
@@ -133,7 +132,7 @@ public class Lift implements Subsystem {
     public static double turretAi = 100;
     public static double turretAf = 50;
     public static final AsymConstraints turretConstraints = new AsymConstraints(turretVm, turretAi, turretAf);
-    private double adjustV = 12;
+    private double adjustV = 40;
     private DcMotorEx pivot;
     private DcMotorEx liftR;
     private DcMotorEx liftL;
@@ -208,7 +207,7 @@ public class Lift implements Subsystem {
             }
         }, t -> {}, (t, b) -> {}, t -> t > restTime(), this);
     }
-    public Command goBack(boolean bucket) {
+    public Command goBack(boolean bucket, boolean reset) {
         return new FnCommand(t -> {
             turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
                     t, new MotionState(0));
@@ -231,14 +230,17 @@ public class Lift implements Subsystem {
                 pivotProfile = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
                         max(t, liftProfile.tf() - dt + 0.15), new MotionState(0));
             }
-        }, t -> {}, (t, b) -> zeroTime = restTime(), t -> t > restTime(), this);
+        }, t -> {}, (t, b) -> {
+            if (reset) {
+                zeroTime = restTime();
+            }}, t -> t > restTime(), this);
     }
     public Command specimen() {
         return new FnCommand(t -> {
             turretPidf.setCoeffs(new PidfCoefficients(5, 0, 0));
             liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
                 t, new MotionState(liftProfile.state(t).x - 5));}, t -> {},
-                (t, b) -> turretPidf.setCoeffs(turretCoeffs), t -> t > restTime(), this);
+                (t, b) -> turretPidf.setCoeffs(turretCoeffs), t -> t > restTime() - 0.15, this);
     }
     public Command adjust(Vec v, double dt) {
         return FnCommand.once(t -> {
@@ -317,7 +319,7 @@ public class Lift implements Subsystem {
                 pivot.setPower(pivotPidf.get());
             }
             if (!Double.isNaN(zeroTime)) {
-                double power = (t - zeroTime < 0.25) ? -0.5 : -0.25;
+                double power = (t - zeroTime < 0.25) ? -0.75 : -0.25;
                 liftR.setPower(power);
                 liftL.setPower(power);
                 liftPidf.reset();

@@ -6,8 +6,11 @@ public class WaitCommand extends Command {
     private DoubleConsumer endFn;
     private double end;
     private double seconds;
-    public WaitCommand(double seconds) {
-        this(t -> {}, seconds);
+    public WaitCommand(double seconds, Subsystem... systems) {
+        this(t -> {}, seconds, false, systems);
+    }
+    public WaitCommand(double seconds, boolean cancelable, Subsystem... systems) {
+        this(t -> {}, seconds, cancelable, systems);
     }
     public WaitCommand(DoubleConsumer initFn, double seconds, Subsystem... systems) {
         this(initFn, seconds, false, systems);

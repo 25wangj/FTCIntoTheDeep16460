@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 public abstract class Command {
     protected Set<Subsystem> subsystems = new HashSet<>();
-    protected boolean cancelable = true;
+    protected boolean cancelable = false;
     public Command(Subsystem... systems) {
         subsystems.addAll(Arrays.asList(systems));
     }

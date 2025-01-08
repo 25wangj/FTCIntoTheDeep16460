@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.RisingEdgeDetector;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.Vec;
 @Photon
 @TeleOp(name = "OneDriver")
@@ -33,43 +34,32 @@ public class TeleopOneDriver extends CommandOpMode {
                     robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber);
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.right_bumper, t -> {
-                if (robot.stateMachine.state() == INTAKE || robot.stateMachine.state() == EXTEND_GRAB) {
+                if (robot.stateMachine.state() == EXTEND_GRAB) {
                     robot.stateMachine.transition(GRABBED);
                 } else if (robot.stateMachine.state() == EXTEND) {
                     robot.stateMachine.transition(EXTEND_GRAB);
-                } else if (robot.stateMachine.state() == GRABBED) {
-                    robot.stateMachine.transition(SPECIMEN);
-                } else if (robot.stateMachine.state() == BUCKET || robot.stateMachine.state() == SIDE_CHAMBER || robot.stateMachine.state() == SPECIMEN) {
-                    robot.stateMachine.transition(INTAKE);
+                } else if (robot.stateMachine.state() == BUCKET || robot.stateMachine.state() == SIDE_CHAMBER) {
+                    robot.stateMachine.transition(EXTEND, new Pose(6, 0, grabRot - robot.drive.getHeading()));
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.left_bumper, t -> {
-                if (robot.stateMachine.state() == INTAKE) {
-                    robot.stateMachine.transition(EXTEND, LiftPosition.inverse(new Vec(12, 0)), grabRot);
-                } else if (robot.stateMachine.state() == EXTEND_GRAB) {
+                if (robot.stateMachine.state() == EXTEND_GRAB) {
                     robot.stateMachine.transition(EXTEND);
                 } else if (robot.stateMachine.state() == GRABBED) {
-                    robot.stateMachine.transition(INTAKE);
+                    robot.stateMachine.transition(EXTEND, new Pose(6, 0, grabRot - robot.drive.getHeading()));
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.start, t -> {
-                if (robot.stateMachine.state() == INTAKE) {
+                if (robot.stateMachine.state() == GRABBED) {
                     robot.stateMachine.transition(CLIMB);
                 } else if (robot.stateMachine.state() == CLIMB) {
                     robot.stateMachine.transition(CLIMBED);
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.back, t -> {
                 if (robot.stateMachine.state() == CLIMB) {
-                    robot.stateMachine.transition(INTAKE);
+                    robot.stateMachine.transition(GRABBED);
                 }}));
         schedule(FnCommand.repeat(t -> {
             if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
-                robot.arm.setGrab(grabRot - robot.drive.getHeading(), robot.lift);
-            }
-            if (robot.stateMachine.state() == INTAKE || robot.stateMachine.state() == SPECIMEN) {
-                if (gamepad1.dpad_down) {
-                    robot.intake.set(-1);
-                } else {
-                    robot.intake.set(0.3);
-                }
+                schedule(robot.arm.setGrab(grabRot - robot.drive.getHeading(), robot.lift));
             }
             if (gamepad1.left_trigger > 0.1) {
                 Vec ang = new Vec(-gamepad1.left_stick_y, -gamepad1.left_stick_x);
