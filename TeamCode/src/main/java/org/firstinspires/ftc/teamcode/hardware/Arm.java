@@ -31,11 +31,11 @@ public class Arm implements Subsystem {
     public static final double armUp = 0.35;
     public static final ArmPosition armRest(double rot) {return new ArmPosition(0, 0, rot);}
     public static final ArmPosition armGrab(double rot) {return new ArmPosition(armUp,0, rot);}
-    public static final ArmPosition armBucket = new ArmPosition(armUp, 2.65, -PI/2);
+    public static final ArmPosition armBucket = new ArmPosition(armUp, 2.67, -PI/2);
     public static final ArmPosition armSideChamber1 = new ArmPosition(-0.35, 3.32, -1.83);
     public static final ArmPosition armSideChamber2 = new ArmPosition(armUp, 3.32, -1.83);
     public static final ArmPosition armBackChamber = new ArmPosition(armUp, 2.79, 0);
-    public static final ArmPosition armGrabbed = new ArmPosition(armUp, 1.89, -PI/2);
+    public static final ArmPosition armGrabbed = new ArmPosition(armUp, 1.10, -PI/2);
     public static final double clawOpen = 0.06;
     public static final double clawClosed = 0.6;
     public static final double grabHyst = 0.262;
@@ -45,7 +45,6 @@ public class Arm implements Subsystem {
     private ServoImplEx claw;
     private ArmPosition armPos = null;
     private boolean wristFlipped = false;
-    private boolean outside = true;
     public Arm(CommandOpMode opMode, boolean auto) {
         opMode.register(this);
         arm = opMode.hardwareMap.get(ServoImplEx.class, "arm");
@@ -62,7 +61,7 @@ public class Arm implements Subsystem {
         } else {
             opMode.schedule(FnCommand.once(t -> {
                 armPos = armGrabbed;
-                setClaw(false);}, this));
+                setClaw(true);}, this));
         }
     }
     public void setArm(ArmPosition pos) {

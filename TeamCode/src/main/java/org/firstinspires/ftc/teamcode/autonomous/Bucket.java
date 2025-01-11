@@ -15,15 +15,14 @@ import org.firstinspires.ftc.teamcode.movement.Vec;
 @Photon
 @Autonomous(name = "Bucket")
 public class Bucket extends AbstractAutonomous {
-    private AsymConstraints slowConstraints = new AsymConstraints(45, 60, 40);
-    private AsymConstraints dropConstraints = new AsymConstraints(30, 40, 40);
-    private AsymConstraints grabConstraints = new AsymConstraints(10, 30, 30);
+    private AsymConstraints grabConstraints = new AsymConstraints(30, 40, 30);
     private Pose start;
     private Pose drop = new Pose(56, 56, -3*PI/4);
     private Pose specimen = new Pose(11, 31, PI/2);
-    private Pose intake1 = new Pose(48, 28, -PI/2);
-    private Pose intake2 = new Pose(58.5, 28, -PI/2);
-    private Pose intake3 = new Pose(64, 18, 0);
+    private Pose intake1a = new Pose(48, 31, -PI/2);
+    private Pose intake1b = new Pose(44, 29, -PI/4);
+    private Pose intake2 = new Pose(58, 31, -PI/2);
+    private Pose intake3 = new Pose(61, 31, -PI/4);
     private Pose park = new Pose(24, 12, -PI);
     private int config = 0;
     @Override
@@ -41,72 +40,53 @@ public class Bucket extends AbstractAutonomous {
         if (config == 1) {
             start = new Pose(31, 64, -PI);
             traj1 = new TrajCommandBuilder(robot.drive, start)
-                    .setMoveConstraints(slowConstraints)
                     .lineTo(drop)
                     .marker(t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                    .marker(t -> robot.stateMachine.transition(EXTEND, new Pose(6, 0, 0)))
-                    .setTangent(-3*PI/4)
-                    .setVel(10)
-                    .splineTo(new Pose(48, 38, -PI/2), -PI/2)
+                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, 0)))
                     .setMoveConstraints(grabConstraints)
-                    .lineTo(intake1.vec())
+                    .lineTo(intake1a)
                     .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                    .setMoveConstraints(dropConstraints)
+                    .pause(0.15)
                     .lineTo(drop)
-                    .marker(0, 0.6, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
+                    .marker(0, 0.4, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
+                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, 0)))
                     .build(scheduler);
             telemetry.addData("Configuration", "Bucket Sample");
         } else {
             start = new Pose(6.5, 63, PI/2);
             traj1 = new TrajCommandBuilder(robot.drive, start)
                     .lineTo(specimen)
-                    .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftHighBackChamber))
-                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
-                    .pause(0.25)
+                    .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
+                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, -PI/4)))
                     .setTangent(PI/4)
-                    .setVel(10)
-                    .splineTo(new Pose(44, 36, -1.3), -1.3)
-                    .setMoveConstraints(grabConstraints)
-                    .lineTo(intake1.vec())
+                    .setMoveConstraints(new AsymConstraints(70, 70, 30))
+                    .splineTo(intake1b, -PI/4)
                     .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                    .setMoveConstraints(dropConstraints)
+                    .pause(0.15)
+                    .setMoveConstraints(grabConstraints)
                     .lineTo(drop)
-                    .marker(0, 0.55, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
+                    .marker(0, 0.4, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
+                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, 0)))
                     .build(scheduler);
             telemetry.addData("Configuration", "Bucket Specimen");
         }
         Command traj2 = new TrajCommandBuilder(robot.drive, drop)
-                .pause(0.25)
-                .marker(t -> robot.stateMachine.transition(EXTEND))
-                .setMoveConstraints(slowConstraints)
-                .setTangent(-1.5)
-                .setVel(10)
-                .splineTo(new Pose(58, 38, -PI/2), -PI/2)
                 .setMoveConstraints(grabConstraints)
                 .lineTo(intake2)
                 .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                .setTangent(PI/2)
-                .setMoveConstraints(dropConstraints)
+                .pause(0.15)
                 .lineTo(drop)
-                .marker(0, 0.55, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                .pause(0.25)
-                .marker(t -> robot.stateMachine.transition(EXTEND))
-                .setMoveConstraints(slowConstraints)
-                .setTangent(-1.4)
-                .setVel(10)
-                .splineTo(new Pose(62, 32, -0.6), -PI/2)
-                .setMoveConstraints(grabConstraints)
-                .setVel(10)
-                .lineTo(new Vec(62, 24))
+                .marker(0, 0.4, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(5, 0, -PI/4)))
                 .lineTo(intake3)
                 .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                .setMoveConstraints(dropConstraints)
+                .pause(0.15)
                 .lineTo(drop)
-                .marker(0, 0.55, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                .pause(0.25)
-                .marker(t -> robot.stateMachine.transition(EXTEND))
+                .marker(0, 0.5, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(0, 0, 0)))
                 .resetConstraints()
                 .splineTo(park.vec(), PI)
+                .marker(1, -0.25, t -> robot.stateMachine.transition(GRABBED))
                 .build(scheduler);
         scheduler.schedule(new SeqCommand(traj1, traj2, FnCommand.once(t -> end())));
         robot.drive.setPose(start);

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -13,10 +15,9 @@ public class Scheduler {
     private Set<Command> commands = new HashSet<>();
     private Map<Subsystem, Command> subsystems = new HashMap<>();
     private Set<Listener> listeners = new HashSet<>();
-    private Set<Command> added = new HashSet<>();
-    private Set<Command> finished = new HashSet<>();
+    private Queue<Command> added = new ArrayDeque<>();
+    private LinkedHashMap<Command, Boolean> finished = new LinkedHashMap<>();
     private ElapsedTime clock;
-    private double time = 0;
     private double lastTime = 0;
     public Scheduler() {
         this(new ElapsedTime());
@@ -25,7 +26,7 @@ public class Scheduler {
         this.clock = clock;
     }
     public double run(boolean active) {
-        time = clock.seconds();
+        double time = clock.seconds();
         for (Subsystem subsystem : subsystems.keySet()) {
             subsystem.update(time, active);
         }
@@ -35,39 +36,43 @@ public class Scheduler {
                     schedule(listener.getCommand());
                 }
             }
-            for (Command command : commands) {
-                if (command.done(time)) {
-                    for (Subsystem subsystem : command.getSubsystems()) {
-                        subsystems.put(subsystem, null);
-                    }
-                    command.end(time, false);
-                    finished.add(command);
-                } else {
-                    command.run(time);
-                }
-            }
-            for (Command command : added) {
-                if (!finished.contains(command)) {
+            for (int i = added.size(); i > 0; i--) {
+                Command command = added.poll();
+                if (!finished.containsKey(command)) {
                     commands.add(command);
+                    command.init(time);
                 }
             }
-            commands.removeAll(finished);
-            added.clear();
-            finished.clear();
+            for (Command command : commands) {
+                if (!finished.containsKey(command)) {
+                    if (command.done(time)) {
+                        for (Subsystem subsystem : command.getSubsystems()) {
+                            subsystems.put(subsystem, null);
+                        }
+                        finished.put(command, false);
+                    } else {
+                        command.run(time);
+                    }
+                }
+            }
+            for (int i = finished.size(); i > 0; i--) {
+                Command command = finished.keySet().iterator().next();
+                commands.remove(command);
+                command.end(time, finished.get(command));
+                finished.remove(command);
+            }
         }
         return -lastTime + (lastTime = time);
     }
     public boolean schedule(Command command) {
-        HashSet<Command> toCancel = new HashSet<>();
-        if (command == null || commands.contains(command)) {
-            return false;
-        }
+        List<Command> toCancel = new ArrayList<>();
         for (Subsystem subsystem : command.getSubsystems()) {
             if (!subsystems.containsKey(subsystem)) {
                 throw new IllegalArgumentException("Unregistered subsystem");
             } else if (using(subsystem)) {
-                if (subsystems.get(subsystem).cancelable) {
-                    toCancel.add(subsystems.get(subsystem));
+                Command cmd2 = subsystems.get(subsystem);
+                if (cmd2.cancelable) {
+                    toCancel.add(cmd2);
                 } else {
                     return false;
                 }
@@ -77,18 +82,16 @@ public class Scheduler {
         for (Subsystem subsystem : command.getSubsystems()) {
             subsystems.put(subsystem, command);
         }
-        command.init(time);
         added.add(command);
         return true;
     }
     public void cancel(Command... toCancel) {
         for (Command command : toCancel) {
-            if (commands.contains(command)) {
+            if (!finished.containsKey(command)) {
                 for (Subsystem subsystem : command.getSubsystems()) {
                     subsystems.put(subsystem, null);
                 }
-                command.end(time, true);
-                finished.add(command);
+                finished.put(command, true);
             }
         }
     }

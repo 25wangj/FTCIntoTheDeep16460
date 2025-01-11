@@ -54,14 +54,14 @@ public class Lift implements Subsystem {
         }
     }
     public static final double liftToDrive = -1.66;
-    public static final double liftXMin = 6;
+    public static final double liftXMin = 0;
     public static final double liftXMax = 24;
     public static final double liftYMax = 5.5;
     public static final double pivotUp = 1.71;
-    public static final LiftPosition liftHighBucket = new LiftPosition(31, 0, pivotUp);
+    public static final LiftPosition liftHighBucket = new LiftPosition(30.5, 0, pivotUp);
     public static final LiftPosition liftLowBucket = new LiftPosition (15, 0, pivotUp);
-    public static final LiftPosition liftHighSideChamber = new LiftPosition(19.5, PI/2, pivotUp);
-    public static final LiftPosition liftHighBackChamber = new LiftPosition(13, 0, pivotUp);
+    public static final LiftPosition liftSideChamber = new LiftPosition(20, PI/2, pivotUp);
+    public static final LiftPosition liftBackChamber = new LiftPosition(13.5, 0, pivotUp);
     public static final LiftPosition climb1 = new LiftPosition(17.5, 0, pivotUp);
     public static final LiftPosition climb2 = new LiftPosition(16, 0, pivotUp);
     public static final LiftPosition climb3 = new LiftPosition(8, 0, pivotUp);
@@ -239,7 +239,7 @@ public class Lift implements Subsystem {
         return new FnCommand(t -> {
             turretPidf.setCoeffs(new PidfCoefficients(5, 0, 0));
             liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
-                t, new MotionState(liftProfile.state(t).x - 5));}, t -> {},
+                t, new MotionState(liftProfile.state(t).x - 5.5));}, t -> {},
                 (t, b) -> turretPidf.setCoeffs(turretCoeffs), t -> t > restTime() - 0.15, this);
     }
     public Command adjust(Vec v, double dt) {
@@ -251,7 +251,7 @@ public class Lift implements Subsystem {
             LiftPosition posN = LiftPosition.inverse(new Vec(xn, yn));
             liftProfile = RampProfile.extendRamp(liftProfile, t, new MotionState(posN.liftExt), dt);
             turretProfile = RampProfile.extendRamp(turretProfile, t, new MotionState(posN.turretAng), dt);
-        }, this);
+        }, true, this);
     }
     public void setClimb(boolean climbing) {
         this.climbing = climbing;
@@ -300,6 +300,7 @@ public class Lift implements Subsystem {
                     drive.setPto(false);
                     drive.setPowers(new Vec(0, 0), 0);}),
                 goTo(climb10),
+                FnCommand.once(t -> liftConstraints = new AsymConstraints(10, 20, 20)),
                 goTo(climb11));
     }
     @Override

@@ -24,14 +24,20 @@ public class TeleopOneDriver extends CommandOpMode {
             RisingEdgeDetector.listen(() -> gamepad1.a, t -> {
                 if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == BUCKET) {
                     robot.stateMachine.transition(BUCKET, liftHighBucket);
+                } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
+                    schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(12, 0))));
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.b, t -> {
                 if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == BUCKET) {
                     robot.stateMachine.transition(BUCKET, liftLowBucket);
+                } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
+                    schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))));
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.x, t -> {
                 if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == SIDE_CHAMBER) {
-                    robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber);
+                    robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber);
+                } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
+                    schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(6, 0))));
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.right_bumper, t -> {
                 if (robot.stateMachine.state() == EXTEND_GRAB) {
@@ -39,13 +45,13 @@ public class TeleopOneDriver extends CommandOpMode {
                 } else if (robot.stateMachine.state() == EXTEND) {
                     robot.stateMachine.transition(EXTEND_GRAB);
                 } else if (robot.stateMachine.state() == BUCKET || robot.stateMachine.state() == SIDE_CHAMBER) {
-                    robot.stateMachine.transition(EXTEND, new Pose(6, 0, grabRot - robot.drive.getHeading()));
+                    robot.stateMachine.transition(EXTEND, new Pose(0, 0, grabRot - robot.drive.getHeading()));
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.left_bumper, t -> {
                 if (robot.stateMachine.state() == EXTEND_GRAB) {
                     robot.stateMachine.transition(EXTEND);
                 } else if (robot.stateMachine.state() == GRABBED) {
-                    robot.stateMachine.transition(EXTEND, new Pose(6, 0, grabRot - robot.drive.getHeading()));
+                    robot.stateMachine.transition(EXTEND, new Pose(0, 0, grabRot - robot.drive.getHeading()));
                 }}),
             RisingEdgeDetector.listen(() -> gamepad1.start, t -> {
                 if (robot.stateMachine.state() == GRABBED) {

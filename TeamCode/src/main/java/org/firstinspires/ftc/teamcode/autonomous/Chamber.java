@@ -40,7 +40,7 @@ public class Chamber extends AbstractAutonomous {
     public void initAutonomous() {
         Command traj1 = new TrajCommandBuilder(robot.drive, start)
                 .lineTo(specimen1)
-                .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftHighBackChamber))
+                .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
                 .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .setMoveConstraints(pushConstraints)
                 .splineTo(sample1, sample1.h)
@@ -83,7 +83,7 @@ public class Chamber extends AbstractAutonomous {
                 .build(scheduler);
         Command traj2 = new TrajCommandBuilder(robot.drive, intake)
                 .setMoveConstraints(toConstraints)
-                .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber))
+                .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
                 .lineTo(specimen2.vec())
                 .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .setVel(10)
@@ -95,7 +95,7 @@ public class Chamber extends AbstractAutonomous {
                 .build(scheduler);
         Command traj3 = new TrajCommandBuilder(robot.drive, intake)
                 .setMoveConstraints(toConstraints)
-                .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftHighSideChamber))
+                .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
                 .lineTo(specimen2.vec())
                 .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .resetConstraints()
