@@ -10,98 +10,80 @@ import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.ParCommand;
 import org.firstinspires.ftc.teamcode.command.RepeatCommand;
 import org.firstinspires.ftc.teamcode.command.SeqCommand;
+import org.firstinspires.ftc.teamcode.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.control.AsymProfile.AsymConstraints;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
+import org.firstinspires.ftc.teamcode.movement.Vec;
+
 @Photon
 @Autonomous(name = "Chamber")
 public class Chamber extends AbstractAutonomous {
-    private AsymConstraints intakeConstraints = new AsymConstraints(10, 30, 30);
     private AsymConstraints pushConstraints = new AsymConstraints(30, 40, 40);
-    private AsymConstraints toConstraints = new AsymConstraints(30, 40, 40);
-    private AsymConstraints fromConstraints = new AsymConstraints(50, 60, 50);
-    private AsymConstraints pushTurnConstraints = new AsymConstraints(4, 8, 4);
+    private AsymConstraints toConstraints = new AsymConstraints(30, 30, 30);
+    private AsymConstraints fromConstraints = new AsymConstraints(70, 70, 30);
+    private AsymConstraints pushTurnConstraints = new AsymConstraints(4, 16, 4);
     private Pose start = new Pose(-6.5, 63, PI/2);
     private Pose specimen1 = new Pose(-6.5, 31, PI/2);
-    private Pose specimen2 = new Pose(-8, 30, 5*PI/6);
+    private Pose specimen2 = new Pose(-6, 30, 5*PI/6);
     private Pose sample1 = new Pose(-32, 42, 5*PI/4);
     private Pose sample2 = new Pose(-42.5, 42, 5*PI/4);
     private Pose sample3 = new Pose(-53, 42, 5*PI/4);
-    private Pose drop1 = new Pose(-31.5, 44, 5*PI/6);
-    private Pose drop2 = new Pose(-42, 44, 5*PI/6);
-    private Pose preIntake = new Pose(-38, 55, 5*PI/6);
-    private Pose intake = new Pose(-44, 59, 5*PI/6);
-    private LiftPosition liftPush1 = new LiftPosition(20, PI/4, 0);
-    private LiftPosition liftPush2 = new LiftPosition(20, 0, 0);
-    private LiftPosition liftPush3 = new LiftPosition(16, PI/4, 0);
-    private ArmPosition armPushDown = new ArmPosition(-0.35, 3*PI/4, 1.31);
-    private ArmPosition armPushUp = new ArmPosition(0, 3*PI/4, 1.31);
+    private Pose drop1 = new Pose(-31.5, 46, 5*PI/6);
+    private Pose drop2 = new Pose(-42, 46, 5*PI/6);
+    private Pose intake = new Pose(-37, 50, 5*PI/6);
+    private Pose park = new Pose(-40, 56, 5*PI/6);
     @Override
     public void initAutonomous() {
         Command traj1 = new TrajCommandBuilder(robot.drive, start)
                 .lineTo(specimen1)
-                .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
+                //.marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(18, 0, PI/4)))
                 .setMoveConstraints(pushConstraints)
                 .splineTo(sample1, sample1.h)
-                .marker(0, 1.1, new ParCommand(
-                        FnCommand.once(t -> {
-                            robot.arm.setArm(armPushUp);
-                            robot.arm.setClaw(true);}),
-                        robot.lift.goTo(liftPush1)
-                ))
-                .pause(0.25)
-                .marker(t -> robot.arm.setArm(armPushDown))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND_GRAB))
+                .pause(0.15)
                 .setTurnConstraints(pushTurnConstraints)
                 .lineTo(drop1)
-                .marker(robot.lift.goTo(liftPush2))
-                .marker(1, -0.15, t -> robot.arm.setArm(armPushUp))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .lineTo(sample2)
-                .marker(robot.lift.goTo(liftPush3))
-                .marker(1, -0.5, robot.lift.goTo(liftPush1))
-                .pause(0.25)
-                .marker(t -> robot.arm.setArm(armPushDown))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND_GRAB))
+                .pause(0.15)
+                .setTurnConstraints(pushTurnConstraints)
                 .lineTo(drop2)
-                .marker(robot.lift.goTo(liftPush2))
-                .marker(1, -0.15, t -> robot.arm.setArm(armPushUp))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
                 .lineTo(sample3)
-                .marker(robot.lift.goTo(liftPush3))
-                .marker(1, -0.5, robot.lift.goTo(liftPush1))
-                .pause(0.25)
-                .marker(t -> robot.arm.setArm(armPushDown))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND_GRAB))
+                .pause(0.15)
                 .setTangent(0)
-                .splineTo(preIntake, PI/2)
-                .marker(robot.lift.goTo(liftPush2))
-                .setMoveConstraints(intakeConstraints)
-                .lineTo(intake.vec())
-                .marker(new ParCommand(
-                        FnCommand.once(t -> {
-                            robot.arm.setArm(armGrab(0));
-                            robot.arm.setClaw(false);}),
-                        robot.lift.goBack(false, true)))
-                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
+                .splineTo(intake, PI/2)
+                .marker(1, -0.5, robot.arm.setGrab(PI/6, robot.lift))
+                .marker(1, -0.15, new SeqCommand(
+                    new WaitCommand(t -> robot.stateMachine.transition(EXTEND), 0.15),
+                    robot.lift.goTo(LiftPosition.inverse(new Vec(6, 0)))))
+                .pause(2)
+                .marker(1, -0.3, t -> robot.stateMachine.transition(GRABBED))
                 .build(scheduler);
-        Command traj2 = new TrajCommandBuilder(robot.drive, intake)
+        /*Command traj2 = new TrajCommandBuilder(robot.drive, intake)
                 .setMoveConstraints(toConstraints)
-                .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
+                //.marker(0, 0.4, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
                 .lineTo(specimen2.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
-                .setVel(10)
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(6, 0, PI/6)))
                 .setMoveConstraints(fromConstraints)
-                .lineTo(preIntake.vec())
-                .setMoveConstraints(intakeConstraints)
                 .lineTo(intake.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                .build(scheduler);
-        Command traj3 = new TrajCommandBuilder(robot.drive, intake)
+                .pause(0.5)
+                .marker(1, -0.3, t -> robot.stateMachine.transition(GRABBED))
+                .build(scheduler);*/
+        /*Command traj3 = new TrajCommandBuilder(robot.drive, intake)
                 .setMoveConstraints(toConstraints)
-                .marker(0, 0.55, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
+                //.marker(0, 0.4, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
                 .lineTo(specimen2.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(0, 0, 0)))
                 .resetConstraints()
-                .lineTo(preIntake.vec())
-                .build(scheduler);
-        scheduler.schedule(new SeqCommand(traj1, new RepeatCommand(traj2, 3), traj3, FnCommand.once(t -> end())));
+                .lineTo(park.vec())
+                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
+                .build(scheduler);*/
+        scheduler.schedule(new SeqCommand(traj1/*, new RepeatCommand(traj2, 3), traj3, FnCommand.once(t -> end())*/));
         robot.drive.setPose(start);
     }
 }

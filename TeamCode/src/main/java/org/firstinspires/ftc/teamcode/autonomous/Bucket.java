@@ -20,7 +20,7 @@ public class Bucket extends AbstractAutonomous {
     private Pose drop = new Pose(56, 56, -3*PI/4);
     private Pose specimen = new Pose(11, 31, PI/2);
     private Pose intake1a = new Pose(48, 31, -PI/2);
-    private Pose intake1b = new Pose(44, 29, -PI/4);
+    private Pose intake1b = new Pose(43, 29, -PI/4);
     private Pose intake2 = new Pose(58, 31, -PI/2);
     private Pose intake3 = new Pose(61, 31, -PI/4);
     private Pose park = new Pose(24, 12, -PI);
@@ -56,7 +56,7 @@ public class Bucket extends AbstractAutonomous {
             start = new Pose(6.5, 63, PI/2);
             traj1 = new TrajCommandBuilder(robot.drive, start)
                     .lineTo(specimen)
-                    .marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
+                    //.marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
                     .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, -PI/4)))
                     .setTangent(PI/4)
                     .setMoveConstraints(new AsymConstraints(70, 70, 30))
@@ -86,7 +86,7 @@ public class Bucket extends AbstractAutonomous {
                 .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(0, 0, 0)))
                 .resetConstraints()
                 .splineTo(park.vec(), PI)
-                .marker(1, -0.25, t -> robot.stateMachine.transition(GRABBED))
+                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
                 .build(scheduler);
         scheduler.schedule(new SeqCommand(traj1, traj2, FnCommand.once(t -> end())));
         robot.drive.setPose(start);

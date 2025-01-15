@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 public class RobotStateMachine {
     public enum robotStates {
-        EXTEND, EXTEND_GRAB, GRABBED, BUCKET, SIDE_CHAMBER, BACK_CHAMBER, CLIMB, CLIMBED
+        EXTEND, EXTEND_GRAB, GRABBED, BUCKET, WALL, CHAMBER, CLIMB, CLIMBED
     }
     public static StateMachine<robotStates> get(CommandOpMode opMode, Robot robot, robotStates state) {
         StateMachineBuilder<robotStates> builder = new StateMachineBuilder<robotStates>(opMode)
@@ -48,35 +48,35 @@ public class RobotStateMachine {
                         new ParCommand(
                                 robot.lift.goTo(LiftPosition.inverse(((Pose)a[0]).vec())),
                                 robot.arm.setGrab(((Pose)a[0]).h, robot.lift))))
-                .addTransition(robotStates.GRABBED, robotStates.SIDE_CHAMBER, a -> new SeqCommand(
+                .addTransition(robotStates.GRABBED, robotStates.WALL, a -> new SeqCommand(
                         new ParCommand(
-                            robot.lift.goTo((LiftPosition)a[0]),
-                            new SeqCommand(
-                                    new WaitCommand(0.25, t -> robot.arm.setArm(armSideChamber1), robot.arm),
-                                    new FnCommand(t -> {}, t -> {}, (t, b) -> robot.arm.setArm(armSideChamber2),
-                                            t -> t > robot.lift.restTime() - 0.15)))))
-                .addTransition(robotStates.SIDE_CHAMBER, robotStates.EXTEND, a -> new SeqCommand(
-                        robot.lift.specimen(),
-                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15,
-                                t -> robot.arm.setArm(armSideChamber1), robot.arm),
+                            robot.lift.goTo(liftWall1),
+                            new FnCommand(t -> robot.arm.setArm(armWall1), t -> {}, (t, b) -> {
+                                robot.arm.setArm(armWall2);
+                                robot.arm.setClaw(false);}, t -> t > robot.lift.restTime() - 0.15, robot.arm))))
+                .addTransition(robotStates.WALL, robotStates.CHAMBER, a -> new SeqCommand(
+                        new WaitCommand(t -> robot.arm.setArm(armWall3), 0.15, robot.arm),
+                        new WaitCommand(t -> robot.arm.setClaw(true), 0.15, robot.arm),
+                        robot.lift.goTo(liftWall2),
                         new ParCommand(
-                                robot.lift.goBack(false, false),
-                                new WaitCommand(0.25, t -> robot.arm.setArm(armGrab(-1.83)), robot.arm)),
+                                robot.lift.wallTo((LiftPosition)a[0]),
+                                new WaitCommand(t -> robot.arm.setArm(armWall1), 0.25,
+                                        t -> robot.arm.setArm((ArmPosition)a[1]), robot.arm))))
+                .addTransition(robotStates.WALL, robotStates.GRABBED, a -> new SeqCommand(
+                        new WaitCommand(t -> robot.arm.setArm(armWall3), 0.15, robot.arm),
+                        new WaitCommand(t -> robot.arm.setClaw(true), 0.15, robot.arm),
+                        robot.lift.goTo(liftWall2),
                         new ParCommand(
-                                robot.lift.goTo(LiftPosition.inverse(((Pose)a[0]).vec())),
-                                robot.arm.setGrab(((Pose)a[0]).h, robot.lift))))
-                .addTransition(robotStates.GRABBED, robotStates.BACK_CHAMBER, a -> new ParCommand(
-                        FnCommand.once(t -> robot.arm.setArm(armBackChamber), robot.arm),
-                        robot.lift.goTo((LiftPosition)a[0])))
-                .addTransition(robotStates.BACK_CHAMBER, robotStates.EXTEND, a -> new SeqCommand(
-                        robot.lift.specimen(),
-                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15,
-                                t -> robot.arm.setArm(armGrab(0)), robot.arm),
-                        new SeqCommand(
-                                robot.lift.goBack(false, false),
-                                new ParCommand(
-                                        robot.lift.goTo(LiftPosition.inverse(((Pose)a[0]).vec())),
-                                        robot.arm.setGrab(((Pose)a[0]).h, robot.lift)))))
+                                robot.lift.goBack(false, true),
+                                new WaitCommand(t -> robot.arm.setArm(armWall1), 0.25,
+                                        t -> robot.arm.setArm(armGrabbed), robot.arm))))
+                .addTransition(robotStates.CHAMBER, robotStates.WALL, a -> new SeqCommand(
+                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15, robot.arm),
+                        new ParCommand(
+                                robot.lift.toWall(),
+                                new FnCommand(t -> robot.arm.setArm(armWall1), t -> {}, (t, b) -> {
+                                    robot.arm.setArm(armWall2);
+                                    robot.arm.setClaw(false);}, t -> t > robot.lift.restTime() - 0.15, robot.arm))))
                 .addTransition(robotStates.GRABBED, robotStates.CLIMB, new ParCommand(
                         FnCommand.once(t -> {
                             robot.arm.setArm(armRest(-PI/2));

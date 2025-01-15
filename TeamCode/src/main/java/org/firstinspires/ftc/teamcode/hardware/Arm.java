@@ -32,10 +32,12 @@ public class Arm implements Subsystem {
     public static final ArmPosition armRest(double rot) {return new ArmPosition(0, 0, rot);}
     public static final ArmPosition armGrab(double rot) {return new ArmPosition(armUp,0, rot);}
     public static final ArmPosition armBucket = new ArmPosition(armUp, 2.67, -PI/2);
-    public static final ArmPosition armSideChamber1 = new ArmPosition(-0.35, 3.32, -1.83);
-    public static final ArmPosition armSideChamber2 = new ArmPosition(armUp, 3.32, -1.83);
-    public static final ArmPosition armBackChamber = new ArmPosition(armUp, 2.79, 0);
-    public static final ArmPosition armGrabbed = new ArmPosition(armUp, 1.10, -PI/2);
+    public static final ArmPosition armWall1 = new ArmPosition(0, 1.36, -PI/2);
+    public static final ArmPosition armWall2 = new ArmPosition(0, 2.79, -PI/2);
+    public static final ArmPosition armWall3 = new ArmPosition(armUp, 2.79, -PI/2);
+    public static final ArmPosition armCloseChamber = new ArmPosition(armUp, 1.48, -PI);
+    public static final ArmPosition armFarChamber = new ArmPosition(armUp, 2.27, -2.62);
+    public static final ArmPosition armGrabbed = new ArmPosition(armUp, 1.36, -PI/2);
     public static final double clawOpen = 0.06;
     public static final double clawClosed = 0.6;
     public static final double grabHyst = 0.262;

@@ -60,8 +60,10 @@ public class Lift implements Subsystem {
     public static final double pivotUp = 1.71;
     public static final LiftPosition liftHighBucket = new LiftPosition(30.5, 0, pivotUp);
     public static final LiftPosition liftLowBucket = new LiftPosition (15, 0, pivotUp);
-    public static final LiftPosition liftSideChamber = new LiftPosition(20, PI/2, pivotUp);
-    public static final LiftPosition liftBackChamber = new LiftPosition(13.5, 0, pivotUp);
+    public static final LiftPosition liftWall1 = new LiftPosition(3.5, -PI/2, PI/2);
+    public static final LiftPosition liftWall2 = new LiftPosition(3.5, -1.31, PI/2);
+    public static final LiftPosition liftCloseChamber = new LiftPosition(16, 0, 0.85);
+    public static final LiftPosition liftFarChamber = new LiftPosition(27, 0, PI/6);
     public static final LiftPosition climb1 = new LiftPosition(17.5, 0, pivotUp);
     public static final LiftPosition climb2 = new LiftPosition(16, 0, pivotUp);
     public static final LiftPosition climb3 = new LiftPosition(8, 0, pivotUp);
@@ -207,6 +209,28 @@ public class Lift implements Subsystem {
             }
         }, t -> {}, (t, b) -> {}, t -> t > restTime(), this);
     }
+    public Command wallTo(LiftPosition pos) {
+        return new FnCommand(t -> {
+            pivotProfile = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
+                    t, new MotionState(pos.pivotAng));
+            turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
+                    t, new MotionState(pos.turretAng));
+            liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
+                    turretProfile.tf(), new MotionState(pos.liftExt));
+        }, t -> {}, (t, b) -> {}, t -> t > restTime(), this);
+    }
+    public Command toWall() {
+        return new FnCommand(t -> {
+            liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
+                    t, new MotionState(liftWall1.liftExt));
+            turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
+                    liftProfile.tf(), new MotionState(liftWall1.turretAng));
+            double dt = AsymProfile.extendAsym(pivotProfile, pivotConstraints, t,
+                    new MotionState(0)).tf() - t;
+            pivotProfile = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
+                    max(t, turretProfile.tf() - dt), new MotionState(liftWall1.pivotAng));
+        }, t -> {}, (t, b) -> {}, t -> t > restTime(), this);
+    }
     public Command goBack(boolean bucket, boolean reset) {
         return new FnCommand(t -> {
             turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
@@ -219,14 +243,14 @@ public class Lift implements Subsystem {
                         pivotBackConstraints, t, new MotionState(PI/2));
                 liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
                         max(turretProfile.tf(), pivotBackProfile.tf()), new MotionState(0));
-                double dt = AsymProfile.extendAsym(pivotBackProfile, pivotConstraints,
-                        new MotionState(0)).tf() - pivotBackProfile.tf();
+                double dt = AsymProfile.extendAsym(pivotBackProfile, pivotConstraints, t,
+                        new MotionState(0)).tf() - t;
                 pivotProfile = new ChainProfile(pivotBackProfile, AsymProfile.extendAsym(pivotBackProfile, pivotConstraints,
                         max(pivotBackProfile.tf(), liftProfile.tf() - dt + 0.15), new MotionState(0)));
             } else {
                 liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints, turretProfile.tf(), new MotionState(0));
-                double dt = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
-                        new MotionState(0)).tf() - pivotProfile.tf();
+                double dt = AsymProfile.extendAsym(pivotProfile, pivotConstraints, t,
+                        new MotionState(0)).tf() - t;
                 pivotProfile = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
                         max(t, liftProfile.tf() - dt + 0.15), new MotionState(0));
             }

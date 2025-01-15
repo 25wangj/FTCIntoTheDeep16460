@@ -3,6 +3,7 @@ import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.robotSta
 import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
 import static java.lang.Math.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
+import static org.firstinspires.ftc.teamcode.hardware.Arm.*;
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
@@ -25,18 +26,16 @@ public class TeleopTwoDriver extends CommandOpMode {
                     if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == BUCKET) {
                         robot.stateMachine.transition(BUCKET, liftHighBucket);
                     } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
-                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(12, 0))));
+                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(14, 0))));
                     }}),
                 RisingEdgeDetector.listen(() -> gamepad2.b, t -> {
                     if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == BUCKET) {
                         robot.stateMachine.transition(BUCKET, liftLowBucket);
                     } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
-                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))));
+                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(22, 0))));
                     }}),
                 RisingEdgeDetector.listen(() -> gamepad2.x, t -> {
-                    if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == SIDE_CHAMBER) {
-                        robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber);
-                    } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
+                    if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
                         schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(6, 0))));
                     }}),
                 RisingEdgeDetector.listen(() -> gamepad2.right_bumper, t -> {
@@ -44,14 +43,20 @@ public class TeleopTwoDriver extends CommandOpMode {
                         robot.stateMachine.transition(GRABBED);
                     } else if (robot.stateMachine.state() == EXTEND) {
                         robot.stateMachine.transition(EXTEND_GRAB);
-                    } else if (robot.stateMachine.state() == BUCKET  || robot.stateMachine.state() == SIDE_CHAMBER) {
+                    } else if (robot.stateMachine.state() == BUCKET) {
                         robot.stateMachine.transition(EXTEND, new Pose(0, 0, grabRot - robot.drive.getHeading()));
+                    } else if (robot.stateMachine.state() == GRABBED || robot.stateMachine.state() == CHAMBER) {
+                        robot.stateMachine.transition(WALL);
+                    } else if (robot.stateMachine.state() == WALL) {
+                        robot.stateMachine.transition(CHAMBER, liftCloseChamber, armCloseChamber);
                     }}),
                 RisingEdgeDetector.listen(() -> gamepad2.left_bumper, t -> {
                     if (robot.stateMachine.state() == EXTEND_GRAB) {
                         robot.stateMachine.transition(EXTEND);
                     } else if (robot.stateMachine.state() == GRABBED) {
-                        robot.stateMachine.transition(EXTEND, new Pose(0, 0, grabRot - robot.drive.getHeading()));
+                        robot.stateMachine.transition(EXTEND, new Pose(6, 0, grabRot - robot.drive.getHeading()));
+                    } else if (robot.stateMachine.state() == WALL) {
+                        robot.stateMachine.transition(GRABBED);
                     }}),
                 RisingEdgeDetector.listen(() -> gamepad1.start, t -> {
                     if (robot.stateMachine.state() == GRABBED) {
