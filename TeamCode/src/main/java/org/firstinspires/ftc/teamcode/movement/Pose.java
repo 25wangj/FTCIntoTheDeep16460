@@ -13,14 +13,12 @@ public class Pose {
         this(v.x, v.y, h);
     }
     public Pose(SimpleMatrix m) {
-        x = m.get(0);
-        y = m.get(1);
-        h = m.get(2);
+        this(m.get(0), m.get(1), m.get(2));
     }
     public Vec vec() {
         return new Vec(x, y);
     }
-    public boolean zero() {
-        return x == 0 && y == 0 && h == 0;
+    public Pose add(Pose other) {
+        return new Pose(vec().combo(1, other.vec().rotate(h), 1), h + other.h);
     }
 }

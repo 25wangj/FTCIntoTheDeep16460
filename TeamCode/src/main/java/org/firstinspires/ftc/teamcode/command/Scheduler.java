@@ -18,7 +18,7 @@ public class Scheduler {
     private Queue<Command> added = new ArrayDeque<>();
     private LinkedHashMap<Command, Boolean> finished = new LinkedHashMap<>();
     private ElapsedTime clock;
-    private double lastTime = 0;
+    protected double lastTime = 0;
     public Scheduler() {
         this(new ElapsedTime());
     }
@@ -65,6 +65,9 @@ public class Scheduler {
         return -lastTime + (lastTime = time);
     }
     public boolean schedule(Command command) {
+        if (command == null) {
+            return false;
+        }
         List<Command> toCancel = new ArrayList<>();
         for (Subsystem subsystem : command.getSubsystems()) {
             if (!subsystems.containsKey(subsystem)) {

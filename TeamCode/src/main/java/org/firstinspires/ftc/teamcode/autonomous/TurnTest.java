@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
 import org.firstinspires.ftc.teamcode.movement.TrajectoryState;
+import org.firstinspires.ftc.teamcode.movement.Twist;
+
 @Config
 @Photon
 @Disabled
@@ -37,13 +39,13 @@ public class TurnTest extends CommandOpMode {
                 .build(scheduler);
         scheduler.schedule(new RepeatCommand(traj));
         scheduler.schedule(FnCommand.repeat(t -> {
-            Pose p = drive.pose();
-            Pose v = drive.vel();
+            Pose p = drive.pose(t);
+            Twist v = drive.vel(t);
             TrajectoryState state = drive.getTrajectory().state(t);
             telemetry.addData("Angle", p.h);
-            telemetry.addData("Angular Velocity", v.h);
+            telemetry.addData("Angular Velocity", v.dh);
             telemetry.addData("Target Angle", state.pos.h);
-            telemetry.addData("Target Velocity", state.vel.h);
+            telemetry.addData("Target Velocity", state.vel.dh);
         }));
     }
 }

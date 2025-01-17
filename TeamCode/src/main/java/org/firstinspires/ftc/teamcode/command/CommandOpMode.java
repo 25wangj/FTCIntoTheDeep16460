@@ -12,7 +12,7 @@ public abstract class CommandOpMode extends LinearOpMode {
     public abstract void initOpMode();
     public void waitOpMode() {}
     public void startOpMode() {}
-    public void endOpMode() {}
+    public void endOpMode(double time) {}
     @Override
     public void runOpMode() {
         scheduler = new Scheduler();
@@ -30,13 +30,13 @@ public abstract class CommandOpMode extends LinearOpMode {
             telemetry.addData("Loop speed", speed);
             telemetry.update();
         }
-        endOpMode();
+        endOpMode(scheduler.lastTime);
     }
     public void register(Subsystem... subsystems) {
         scheduler.register(subsystems);
     }
-    public void schedule(Command command) {
-        scheduler.schedule(command);
+    public boolean schedule(Command command) {
+        return scheduler.schedule(command);
     }
     public void end() {
         done = true;

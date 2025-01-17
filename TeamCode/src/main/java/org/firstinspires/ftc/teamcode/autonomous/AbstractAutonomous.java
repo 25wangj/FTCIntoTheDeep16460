@@ -13,8 +13,8 @@ public abstract class AbstractAutonomous extends CommandOpMode {
         initAutonomous();
     }
     @Override
-    public void endOpMode() {
+    public void endOpMode(double t) {
         lastSide = side;
-        lastPose = robot.drive.pose();
+        lastPose = robot.drive.pose(t);
     }
 }

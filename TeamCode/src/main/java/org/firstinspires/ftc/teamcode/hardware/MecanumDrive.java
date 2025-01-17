@@ -9,7 +9,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.command.Command;
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
+import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.RepeatCommand;
 import org.firstinspires.ftc.teamcode.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.control.AsymProfile.AsymConstraints;
@@ -23,6 +25,7 @@ public class MecanumDrive extends MecanumDrivetrain {
     public static double driveKa = 0.001;
     public static double driveKs = 0;
     public static double strafeMult = 1;
+    public static final double otosDelay = 0.01;
     public static final Pose otosOffset = new Pose(2.25, 0, 3.13);
     public static final double linScalar = 1.012;
     public static final double angScalar = 0.996;
@@ -44,11 +47,10 @@ public class MecanumDrive extends MecanumDrivetrain {
     private Servo ptoR;
     private Servo ptoL;
     private Otos otos;
-    private double heading;
     private double headingOffset = 0;
     public MecanumDrive(CommandOpMode opMode, boolean auto) {
         super(trackWidth, driveKs, driveKv, driveKa, strafeMult, new PidfCoefficients(xKp, xKi, xKd),
-                new PidfCoefficients(yKp, yKi, yKd), new PidfCoefficients(turnKp, turnKi, turnKd), moveConstraints, turnConstraints, auto);
+                new PidfCoefficients(yKp, yKi, yKd), new PidfCoefficients(turnKp, turnKi, turnKd), moveConstraints, turnConstraints);
         opMode.register(this);
         fr = opMode.hardwareMap.get(DcMotorEx.class, "fr");
         fl = opMode.hardwareMap.get(DcMotorEx.class, "fl");
@@ -68,27 +70,24 @@ public class MecanumDrive extends MecanumDrivetrain {
         otos.setOffset(otosOffset);
         otos.setLinearScalar(linScalar);
         otos.setAngularScalar(angScalar);
-        telemetry.addLine("Calibrating");
-        telemetry.update();
-        otos.calibrateImu(255, true);
-        telemetry.addLine("Calibrated");
-        telemetry.update();
         if (auto) {
-            localizer = new OtosLocalizer(otos);
-        } else {
-            heading = otos.getPosition().h;
-            opMode.schedule(new RepeatCommand(new WaitCommand(t -> heading = otos.getPosition().h, 0.1)));
+            telemetry.addLine("Calibrating");
+            telemetry.update();
+            otos.calibrateImu(255, true);
+            telemetry.addLine("Calibrated");
+            telemetry.update();
         }
+        localizer = new OtosLocalizer(otos, otosDelay);
         setPto(false);
     }
     public void setPto(boolean down) {
         ptoR.setPosition(down ? ptoRDown : ptoRUp);
         ptoL.setPosition(down ? ptoLDown : ptoLUp);
     }
-    public void setHeading(double h) {
-        headingOffset = heading - h;
+    public Command setHeading(double h) {
+        return FnCommand.once(t -> headingOffset = localizer.pos(t).h - h);
     }
-    public double getHeading() {
-        return heading - headingOffset;
+    public double getHeading(double t) {
+        return localizer.pos(t).h - headingOffset;
     }
 }

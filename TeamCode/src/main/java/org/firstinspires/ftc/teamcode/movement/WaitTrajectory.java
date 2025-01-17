@@ -12,7 +12,7 @@ public class WaitTrajectory implements Trajectory {
     @Override
     public TrajectoryState state(double t) {
         return new TrajectoryState(new Pose(pos.vec().combo(1, vel, t - ti), pos.h),
-                new Pose(vel, 0), new Vec(0, 0));
+                new Twist(vel, 0), new Vec(0, 0));
     }
     @Override
     public void setTi(double ti) {

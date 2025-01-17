@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import static java.lang.Math.*;
 import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.robotStates.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
-import static org.firstinspires.ftc.teamcode.hardware.Arm.*;
+
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.command.Command;
@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.ParCommand;
 import org.firstinspires.ftc.teamcode.command.RepeatCommand;
 import org.firstinspires.ftc.teamcode.command.SeqCommand;
-import org.firstinspires.ftc.teamcode.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.control.AsymProfile.AsymConstraints;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
@@ -19,71 +18,73 @@ import org.firstinspires.ftc.teamcode.movement.Vec;
 @Photon
 @Autonomous(name = "Chamber")
 public class Chamber extends AbstractAutonomous {
-    private AsymConstraints pushConstraints = new AsymConstraints(30, 40, 40);
-    private AsymConstraints toConstraints = new AsymConstraints(30, 30, 30);
-    private AsymConstraints fromConstraints = new AsymConstraints(70, 70, 30);
-    private AsymConstraints pushTurnConstraints = new AsymConstraints(4, 16, 4);
-    private Pose start = new Pose(-6.5, 63, PI/2);
-    private Pose specimen1 = new Pose(-6.5, 31, PI/2);
-    private Pose specimen2 = new Pose(-6, 30, 5*PI/6);
-    private Pose sample1 = new Pose(-32, 42, 5*PI/4);
-    private Pose sample2 = new Pose(-42.5, 42, 5*PI/4);
-    private Pose sample3 = new Pose(-53, 42, 5*PI/4);
-    private Pose drop1 = new Pose(-31.5, 46, 5*PI/6);
-    private Pose drop2 = new Pose(-42, 46, 5*PI/6);
-    private Pose intake = new Pose(-37, 50, 5*PI/6);
-    private Pose park = new Pose(-40, 56, 5*PI/6);
+    private AsymConstraints sampleConstraints = new AsymConstraints(60, 70, 30);
+    private AsymConstraints sampleTurnConstraints = new AsymConstraints(4, 8, 4);
+    private AsymConstraints specConstraints = new AsymConstraints(60, 70, 30);
+    private Pose start = new Pose(-6.5, 63, -PI/2);
+    private Pose specimen1 = new Pose(-6.5, 39, -PI/2);
+    private Pose specimen2 = new Pose(-4.5, 40, -PI/2);
+    private Pose sample1 = new Pose(-32, 42, -3*PI/4);
+    private Pose sample2 = new Pose(-42.5, 42, -3*PI/4);
+    private Pose sample3 = new Pose(-53, 42, -3*PI/4);
+    private Pose drop1 = new Pose(-31.5, 46, -7*PI/6);
+    private Pose drop2 = new Pose(-42, 46, -7*PI/6);
+    private Pose wall = new Pose(-29, 64, -PI/2);
+    private Pose bucket = new Pose(56, 56, -3*PI/4);
     @Override
     public void initAutonomous() {
         Command traj1 = new TrajCommandBuilder(robot.drive, start)
                 .lineTo(specimen1)
-                //.marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(18, 0, PI/4)))
-                .setMoveConstraints(pushConstraints)
-                .splineTo(sample1, sample1.h)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND_GRAB))
+                .marker(robot.stateMachine.getTransition(GRABBED, CHAMBER))
+                .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, EXTEND,
+                        new Pose(18, 0, PI/4)))
+                .setMoveConstraints(sampleConstraints)
+                .lineTo(sample1)
+                .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB))
                 .pause(0.15)
-                .setTurnConstraints(pushTurnConstraints)
+                .setTurnConstraints(sampleTurnConstraints)
                 .lineTo(drop1)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
+                .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))
                 .lineTo(sample2)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND_GRAB))
+                .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB))
                 .pause(0.15)
-                .setTurnConstraints(pushTurnConstraints)
                 .lineTo(drop2)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND))
+                .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))
+                .marker(1, 0, robot.lift.goTo(LiftPosition.inverse(new Vec(14, 0))))
                 .lineTo(sample3)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND_GRAB))
+                .marker(1, -0.5, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
+                .marker(1, -0.15, new SeqCommand(
+                        robot.stateMachine.getTransition(EXTEND, GRABBED),
+                        robot.stateMachine.getTransition(GRABBED, WALL)))
                 .pause(0.15)
                 .setTangent(0)
-                .splineTo(intake, PI/2)
-                .marker(1, -0.5, robot.arm.setGrab(PI/6, robot.lift))
-                .marker(1, -0.15, new SeqCommand(
-                    new WaitCommand(t -> robot.stateMachine.transition(EXTEND), 0.15),
-                    robot.lift.goTo(LiftPosition.inverse(new Vec(6, 0)))))
-                .pause(2)
-                .marker(1, -0.3, t -> robot.stateMachine.transition(GRABBED))
+                .splineTo(wall, PI/2)
                 .build(scheduler);
-        /*Command traj2 = new TrajCommandBuilder(robot.drive, intake)
-                .setMoveConstraints(toConstraints)
-                //.marker(0, 0.4, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
-                .lineTo(specimen2.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(6, 0, PI/6)))
-                .setMoveConstraints(fromConstraints)
-                .lineTo(intake.vec())
-                .pause(0.5)
-                .marker(1, -0.3, t -> robot.stateMachine.transition(GRABBED))
-                .build(scheduler);*/
-        /*Command traj3 = new TrajCommandBuilder(robot.drive, intake)
-                .setMoveConstraints(toConstraints)
-                //.marker(0, 0.4, t -> robot.stateMachine.transition(SIDE_CHAMBER, liftSideChamber))
-                .lineTo(specimen2.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(0, 0, 0)))
-                .resetConstraints()
-                .lineTo(park.vec())
-                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                .build(scheduler);*/
-        scheduler.schedule(new SeqCommand(traj1/*, new RepeatCommand(traj2, 3), traj3, FnCommand.once(t -> end())*/));
+        Command traj2 = new TrajCommandBuilder(robot.drive, wall)
+                .setMoveConstraints(specConstraints)
+                .pause(0.3)
+                .marker(robot.stateMachine.getTransition(WALL, CHAMBER))
+                .lineTo(specimen2)
+                .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, WALL))
+                .lineTo(wall)
+                .build(scheduler);
+        Command traj3 = new TrajCommandBuilder(robot.drive, wall)
+                .pause(0.3)
+                .marker(new SeqCommand(
+                        robot.stateMachine.getTransition(WALL, GRABBED),
+                        robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket)))
+                .setMoveConstraints(new AsymConstraints(70, 70, 30))
+                .lineTo(bucket)
+                .marker(1, -0.15, new SeqCommand(
+                        robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(0, 0, 0)),
+                        robot.stateMachine.getTransition(EXTEND, GRABBED)))
+                .pause(1)
+                .build(scheduler);
+        scheduler.schedule(new SeqCommand(
+                traj1,
+                new RepeatCommand(traj2, 4),
+                traj3,
+                FnCommand.once(t -> end())));
         robot.drive.setPose(start);
     }
 }

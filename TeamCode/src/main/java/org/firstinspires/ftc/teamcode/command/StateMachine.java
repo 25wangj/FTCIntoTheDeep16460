@@ -20,14 +20,17 @@ public class StateMachine<T extends Enum<T>> {
     public T state() {
         return state;
     }
-    public boolean transition(T next, Object... params) {
-        if (!transitions.containsKey(new Pair<>(state, next))) {
+    public Command getTransition(T start, T end, Object... params) {
+        if (!transitions.containsKey(new Pair<>(start, end))) {
             throw new IllegalArgumentException("Transition does not exist");
         }
-        if (scheduler.schedule(transitions.get(new Pair<>(state, next)).apply(params))) {
-            state = next;
-            return true;
+        return new ParCommand(transitions.get(new Pair<>(start, end)).apply(params),
+                FnCommand.once(t -> state = end));
+    }
+    public boolean transition(T start, T end, Object... params) {
+        if (state != start) {
+            return false;
         }
-        return false;
+        return scheduler.schedule(getTransition(start, end, params));
     }
 }

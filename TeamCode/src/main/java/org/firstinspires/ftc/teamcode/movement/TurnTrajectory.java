@@ -15,7 +15,7 @@ public class TurnTrajectory implements Trajectory {
     @Override
     public TrajectoryState state(double t) {
         MotionState s = profile.state(t - ti);
-        return new TrajectoryState(new Pose(pos, s.x), new Pose(0, 0, s.v), new Vec(0, 0));
+        return new TrajectoryState(new Pose(pos, s.x), new Twist(0, 0, s.v), new Vec(0, 0));
     }
     @Override
     public void setTi(double ti) {

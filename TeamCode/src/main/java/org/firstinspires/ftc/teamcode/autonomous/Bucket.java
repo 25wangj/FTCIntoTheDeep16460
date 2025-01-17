@@ -6,19 +6,20 @@ import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.command.Command;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
+import org.firstinspires.ftc.teamcode.command.ParCommand;
 import org.firstinspires.ftc.teamcode.command.SeqCommand;
 import org.firstinspires.ftc.teamcode.control.AsymProfile.AsymConstraints;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
-import org.firstinspires.ftc.teamcode.movement.Vec;
 
 @Photon
 @Autonomous(name = "Bucket")
 public class Bucket extends AbstractAutonomous {
     private AsymConstraints grabConstraints = new AsymConstraints(30, 40, 30);
     private Pose start;
+    private Pose mid;
     private Pose drop = new Pose(56, 56, -3*PI/4);
-    private Pose specimen = new Pose(11, 31, PI/2);
+    private Pose specimen = new Pose(6.5, 39, -PI/2);
     private Pose intake1a = new Pose(48, 31, -PI/2);
     private Pose intake1b = new Pose(43, 29, -PI/4);
     private Pose intake2 = new Pose(58, 31, -PI/2);
@@ -39,56 +40,66 @@ public class Bucket extends AbstractAutonomous {
         Command traj1;
         if (config == 1) {
             start = new Pose(31, 64, -PI);
+            mid = intake1a;
             traj1 = new TrajCommandBuilder(robot.drive, start)
                     .lineTo(drop)
-                    .marker(t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, 0)))
+                    .marker(robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket))
+                    .marker(1, -0.15, robot.stateMachine.getTransition(BUCKET, EXTEND,
+                            new Pose(2, 0, 0)))
                     .setMoveConstraints(grabConstraints)
                     .lineTo(intake1a)
-                    .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                    .pause(0.15)
-                    .lineTo(drop)
-                    .marker(0, 0.4, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, 0)))
+                    .marker(1, -0.15, new SeqCommand(
+                            robot.stateMachine.getTransition(EXTEND, GRABBED),
+                            robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket)))
                     .build(scheduler);
             telemetry.addData("Configuration", "Bucket Sample");
         } else {
-            start = new Pose(6.5, 63, PI/2);
+            start = new Pose(6.5, 63, -PI/2);
+            mid = intake1b;
             traj1 = new TrajCommandBuilder(robot.drive, start)
                     .lineTo(specimen)
-                    //.marker(t -> robot.stateMachine.transition(BACK_CHAMBER, liftBackChamber))
-                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, -PI/4)))
+                    .marker(robot.stateMachine.getTransition(GRABBED, CHAMBER))
+                    .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, EXTEND,
+                            new Pose(2, 0, -PI/4)))
                     .setTangent(PI/4)
                     .setMoveConstraints(new AsymConstraints(70, 70, 30))
                     .splineTo(intake1b, -PI/4)
-                    .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
-                    .pause(0.15)
-                    .setMoveConstraints(grabConstraints)
-                    .lineTo(drop)
-                    .marker(0, 0.4, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                    .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(2, 0, 0)))
+                    .marker(1, -0.15, new SeqCommand(
+                            robot.stateMachine.getTransition(EXTEND, GRABBED),
+                            robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket)))
                     .build(scheduler);
             telemetry.addData("Configuration", "Bucket Specimen");
         }
-        Command traj2 = new TrajCommandBuilder(robot.drive, drop)
+        Command traj2 = new TrajCommandBuilder(robot.drive, mid)
+                .pause(0.15)
                 .setMoveConstraints(grabConstraints)
+                .lineTo(drop)
+                .marker(1, -0.15, robot.stateMachine.getTransition(BUCKET, EXTEND,
+                        new Pose(2, 0, 0)))
                 .lineTo(intake2)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
+                .marker(1, -0.15, new SeqCommand(
+                        robot.stateMachine.getTransition(EXTEND, GRABBED),
+                        robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket)))
                 .pause(0.15)
                 .lineTo(drop)
-                .marker(0, 0.4, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(5, 0, -PI/4)))
+                .marker(1, -0.15, robot.stateMachine.getTransition(BUCKET, EXTEND,
+                        new Pose(5, 0, -PI/4)))
                 .lineTo(intake3)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
+                .marker(1, -0.15, new SeqCommand(
+                        robot.stateMachine.getTransition(EXTEND, GRABBED),
+                        robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket)))
                 .pause(0.15)
                 .lineTo(drop)
-                .marker(0, 0.5, t -> robot.stateMachine.transition(BUCKET, liftHighBucket))
-                .marker(1, -0.15, t -> robot.stateMachine.transition(EXTEND, new Pose(0, 0, 0)))
+                .marker(1, -0.15, new SeqCommand(
+                        robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(0, 0, 0)),
+                        robot.stateMachine.getTransition(EXTEND, GRABBED)))
                 .resetConstraints()
                 .splineTo(park.vec(), PI)
-                .marker(1, -0.15, t -> robot.stateMachine.transition(GRABBED))
                 .build(scheduler);
-        scheduler.schedule(new SeqCommand(traj1, traj2, FnCommand.once(t -> end())));
+        scheduler.schedule(new SeqCommand(
+                traj1,
+                traj2,
+                FnCommand.once(t -> end())));
         robot.drive.setPose(start);
     }
 }

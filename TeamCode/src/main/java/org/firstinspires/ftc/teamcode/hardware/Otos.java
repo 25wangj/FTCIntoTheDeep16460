@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.configuration.annotations.I2cDeviceType;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.movement.Pose;
+import org.firstinspires.ftc.teamcode.movement.Twist;
 
 /**
  * {@link com.qualcomm.hardware.sparkfun.SparkFunOTOS} is the Java driver for the SparkFun Qwiic Optical Tracking Odometry Sensor
@@ -656,13 +657,13 @@ public class Otos extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         return readPoseRegs(REG_ACC_STD_XL, INT16_TO_MPSS, INT16_TO_RPSS);
     }
 
-    Pair<Pose, Pose> getPosVel() {
+    Pair<Pose, Twist> getPosVel() {
         // Read all pose registers
         byte[] rawData = deviceClient.read(REG_POS_XL, 12);
 
         // Convert raw data to pose units
         return new Pair<>(regsToPose(Arrays.copyOfRange(rawData, 0, 6), INT16_TO_METER, INT16_TO_RAD),
-            regsToPose(Arrays.copyOfRange(rawData, 6, 12), INT16_TO_MPS, INT16_TO_RPS));
+            regsToTwist(Arrays.copyOfRange(rawData, 6, 12), INT16_TO_MPS, INT16_TO_RPS));
     }
     
     // Function to read raw pose registers and convert to specified units
@@ -696,6 +697,22 @@ public class Otos extends I2cDeviceSynchDevice<I2cDeviceSynch> {
 
         // Store in pose and convert to units
         return new Pose(_distanceUnit.fromMeters(rawX * rawToXY),
+                _distanceUnit.fromMeters(rawY * rawToXY),
+                _angularUnit.fromRadians(rawH * rawToH));
+    }
+
+    protected Twist regsToTwist(byte[] rawData, double rawToXY, double rawToH) {
+        // Wrap raw data in a buffer to handle endianness and signed values
+        ByteBuffer data = ByteBuffer.wrap(rawData);
+        data.order(java.nio.ByteOrder.LITTLE_ENDIAN);
+
+        // Store raw data
+        short rawX = data.getShort(0);
+        short rawY = data.getShort(2);
+        short rawH = data.getShort(4);
+
+        // Store in pose and convert to units
+        return new Twist(_distanceUnit.fromMeters(rawX * rawToXY),
                 _distanceUnit.fromMeters(rawY * rawToXY),
                 _angularUnit.fromRadians(rawH * rawToH));
     }

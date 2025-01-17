@@ -67,7 +67,7 @@ public class PathTrajectory implements Trajectory {
         } else {
             h = turnProfiles[ind].state(t - ti);
         }
-        return new TrajectoryState(new Pose(state.pos, h.x), new Pose(state.dir.mult(s.v), h.v),
+        return new TrajectoryState(new Pose(state.pos, h.x), new Twist(state.dir.mult(s.v), h.v),
                 state.dir.combo(moveProfile.state(t - ti).a, new Vec(state.dir.y, -state.dir.x), state.curv*s.v*s.v));
     }
     private double t(double x) {

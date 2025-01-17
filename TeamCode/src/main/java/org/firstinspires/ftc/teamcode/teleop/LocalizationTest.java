@@ -25,7 +25,7 @@ public class LocalizationTest extends CommandOpMode { @Override
             } else {
                 drive.setPowers(v, turn);
             }
-            Pose p = drive.pose();
+            Pose p = drive.pose(t);
             telemetry.addData("X", p.x);
             telemetry.addData("Y", p.y);
             telemetry.addData("Heading", p.h % (2 * PI));

@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
 import org.firstinspires.ftc.teamcode.movement.TrajectoryState;
+import org.firstinspires.ftc.teamcode.movement.Twist;
 import org.firstinspires.ftc.teamcode.movement.Vec;
 @Config
 @Photon
@@ -38,13 +39,13 @@ public class SidewaysTest extends CommandOpMode {
                 .build(scheduler);
         scheduler.schedule(new RepeatCommand(traj));
         scheduler.schedule(FnCommand.repeat(t -> {
-            Pose p = drive.pose();
-            Pose v = drive.vel();
+            Pose p = drive.pose(t);
+            Twist v = drive.vel(t);
             TrajectoryState state = drive.getTrajectory().state(t);
             telemetry.addData("Position", p.y);
-            telemetry.addData("Velocity", v.y);
+            telemetry.addData("Velocity", v.dy);
             telemetry.addData("Target Position", state.pos.y);
-            telemetry.addData("Target Velocity", state.vel.y);
+            telemetry.addData("Target Velocity", state.vel.dy);
         }));
     }
 }

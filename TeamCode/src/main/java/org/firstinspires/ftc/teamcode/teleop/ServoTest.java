@@ -16,24 +16,15 @@ import org.firstinspires.ftc.teamcode.command.RisingEdgeDetector;
 @Photon
 @TeleOp(name = "ServoTest")
 public class ServoTest extends CommandOpMode {
-    private ServoImplEx servo1;
-    private ServoImplEx servo2;
-    private ServoImplEx arm;
+    private ServoImplEx servo;
     private double pos;
     @Override
     public void initOpMode() {
-        servo1 = hardwareMap.get(ServoImplEx.class, "diffR");
-        servo2 = hardwareMap.get(ServoImplEx.class, "diffL");
-        arm = hardwareMap.get(ServoImplEx.class, "arm");
-        arm.setPwmRange(new PwmControl.PwmRange(500, 2500));
-        servo1.setPwmRange(new PwmControl.PwmRange(500, 2500));
-        servo2.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        servo = hardwareMap.get(ServoImplEx.class, "claw");
+        servo.setPwmRange(new PwmControl.PwmRange(500, 2500));
         pos = 0.5;
-        arm.setPosition(armZero);
         Subsystem servoSubsystem = (t, b) -> {
-            servo1.setPosition(pos);
-            servo2.setPosition(pos);
-            //arm.setPosition(pos);
+            servo.setPosition(pos);
             telemetry.addData("Position", pos);
         };
         register(servoSubsystem);
