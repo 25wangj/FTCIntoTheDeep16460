@@ -15,6 +15,5 @@ public abstract class AbstractAutonomous extends CommandOpMode {
     @Override
     public void endOpMode(double t) {
         lastSide = side;
-        lastPose = robot.drive.pose(t);
     }
 }

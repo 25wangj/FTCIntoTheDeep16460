@@ -85,9 +85,6 @@ public class MecanumDrive extends MecanumDrivetrain {
         ptoL.setPosition(down ? ptoLDown : ptoLUp);
     }
     public Command setHeading(double h) {
-        return FnCommand.once(t -> headingOffset = localizer.pos(t).h - h);
-    }
-    public double getHeading(double t) {
-        return localizer.pos(t).h - headingOffset;
+        return FnCommand.once(t -> localizer.setPose(new Pose(pose(t).vec(), h)));
     }
 }

@@ -27,12 +27,12 @@ public class Chamber extends AbstractAutonomous {
     private Pose sample1 = new Pose(-32, 42, -3*PI/4);
     private Pose sample2 = new Pose(-42.5, 42, -3*PI/4);
     private Pose sample3 = new Pose(-53, 42, -3*PI/4);
-    private Pose drop1 = new Pose(-31.5, 46, -7*PI/6);
-    private Pose drop2 = new Pose(-42, 46, -7*PI/6);
+    private Pose drop1 = new Pose(-31.5, 47, -7*PI/6);
+    private Pose drop2 = new Pose(-42, 47, -7*PI/6);
     public static final Pose wall = new Pose(-29, 64, -PI/2);
     public static final Pose specimen2 = new Pose(-4.5, 40, -PI/2);
-    private Pose bucket = new Pose(52, 63, -PI);
-    private Pose park = new Pose(-40, 63, -PI);
+    private Pose bucket = new Pose(60, 56, -3*PI/4);
+    private Pose park = new Pose(-35, 63, -PI);
     private int config = 0;
     @Override
     public void initAutonomous() {
@@ -58,12 +58,14 @@ public class Chamber extends AbstractAutonomous {
                 .setTurnConstraints(sampleTurnConstraints)
                 .lineTo(drop1)
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))
+                .marker(1, 0, robot.lift.goTo(LiftPosition.inverse(new Vec(12, 0))))
                 .lineTo(sample2)
+                .marker(1, -0.5, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB))
                 .pause(0.15)
                 .lineTo(drop2)
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))
-                .marker(1, 0, robot.lift.goTo(LiftPosition.inverse(new Vec(14, 0))))
+                .marker(1, 0, robot.lift.goTo(LiftPosition.inverse(new Vec(12, 0))))
                 .lineTo(sample3)
                 .marker(1, -0.5, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
                 .marker(1, -0.15, new SeqCommand(
@@ -77,20 +79,19 @@ public class Chamber extends AbstractAutonomous {
         if (config == 1) {
             traj2 = new SeqCommand(
                     new WaitCommand(t -> {
-                        schedule(new SeqCommand(
-                                robot.stateMachine.getTransition(WALL, GRABBED),
-                                robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket)));
+                        robot.stateMachine.transition(WALL, GRABBED);
                         robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.3),
                     new TrajCommandBuilder(robot.drive, wall)
-                        .setTangent(0)
-                        .setVel(NaN)
                         .setMoveConstraints(sampleConstraints)
-                        .splineTo(new Pose(24, 64, -PI), 0)
                         .lineTo(bucket)
+                        .marker(1, -1.25, robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket))
                         .marker(1, -0.15, new SeqCommand(
                                 robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(0, 0, 0)),
                                 robot.stateMachine.getTransition(EXTEND, GRABBED)))
                         .setMoveConstraints(new AsymConstraints(100, 70, 100))
+                        .setTangent(-5*PI/6)
+                        .setVel(NaN)
+                        .splineTo(new Pose(40, 63, -PI), 0)
                         .lineTo(park)
                         .build(scheduler));
             telemetry.addData("Configuration", "Chamber Sample");
@@ -101,7 +102,7 @@ public class Chamber extends AbstractAutonomous {
                             robot.drive.setTrajectory(null);
                             robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.3),
                         new TrajCommandBuilder(robot.drive, wall)
-                        .pause(0.3)
+                        .marker(t -> robot.drive.setPose(wall))
                         .marker(robot.stateMachine.getTransition(WALL, GRABBED))
                         .lineTo(park)
                         .build(scheduler));
