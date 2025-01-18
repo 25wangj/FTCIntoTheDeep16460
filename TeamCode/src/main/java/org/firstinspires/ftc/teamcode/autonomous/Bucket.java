@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
 @Photon
 @Autonomous(name = "Bucket")
 public class Bucket extends AbstractAutonomous {
-    private AsymConstraints grabConstraints = new AsymConstraints(30, 40, 30);
+    private AsymConstraints grabConstraints = new AsymConstraints(20, 30, 20);
     private Pose start;
     private Pose mid;
     private Pose drop = new Pose(56, 56, -3*PI/4);
