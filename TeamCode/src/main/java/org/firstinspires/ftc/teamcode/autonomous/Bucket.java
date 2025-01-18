@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 import static java.lang.Math.*;
+import static org.firstinspires.ftc.teamcode.autonomous.Chamber.*;
 import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.robotStates.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
 import com.outoftheboxrobotics.photoncore.Photon;
@@ -57,12 +58,13 @@ public class Bucket extends AbstractAutonomous {
             start = new Pose(6.5, 63, -PI/2);
             mid = intake1b;
             traj1 = new TrajCommandBuilder(robot.drive, start)
+                    .setMoveConstraints(specConstraints)
                     .lineTo(specimen)
                     .marker(robot.stateMachine.getTransition(GRABBED, CHAMBER))
                     .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, EXTEND,
                             new Pose(2, 0, -PI/4)))
                     .setTangent(PI/4)
-                    .setMoveConstraints(new AsymConstraints(70, 70, 30))
+                    .setMoveConstraints(sampleConstraints)
                     .splineTo(intake1b, -PI/4)
                     .marker(1, -0.15, new SeqCommand(
                             robot.stateMachine.getTransition(EXTEND, GRABBED),

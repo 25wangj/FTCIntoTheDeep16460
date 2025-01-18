@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.command.Command;
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.ParCommand;
+import org.firstinspires.ftc.teamcode.command.RepeatCommand;
 import org.firstinspires.ftc.teamcode.command.SeqCommand;
 import org.firstinspires.ftc.teamcode.command.Subsystem;
 import org.firstinspires.ftc.teamcode.command.WaitCommand;
@@ -320,7 +321,8 @@ public class Lift implements Subsystem {
                     drive.setPowers(new Vec(0, 0), 0);}),
                 goTo(climb10),
                 FnCommand.once(t -> liftConstraints = new AsymConstraints(10, 20, 20)),
-                goTo(climb11));
+                goTo(climb11),
+                FnCommand.repeat(t -> {}));
     }
     @Override
     public void update(double t, boolean active) {

@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware;
+import static org.firstinspires.ftc.teamcode.autonomous.Chamber.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
 import static org.firstinspires.ftc.teamcode.hardware.Arm.*;
+import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.robotStates.CHAMBER;
+import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.robotStates.WALL;
 import static java.lang.Math.*;
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
@@ -9,7 +12,11 @@ import org.firstinspires.ftc.teamcode.command.SeqCommand;
 import org.firstinspires.ftc.teamcode.command.StateMachine;
 import org.firstinspires.ftc.teamcode.command.StateMachineBuilder;
 import org.firstinspires.ftc.teamcode.command.WaitCommand;
+import org.firstinspires.ftc.teamcode.control.AsymProfile.*;
 import org.firstinspires.ftc.teamcode.movement.Pose;
+import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
+import org.firstinspires.ftc.teamcode.movement.Vec;
+
 public class RobotStateMachine {
     public enum robotStates {
         EXTEND, EXTEND_GRAB, GRABBED, BUCKET, WALL, CHAMBER, CLIMB, CLIMBED
@@ -91,6 +98,20 @@ public class RobotStateMachine {
                         new ParCommand(
                                 robot.lift.goTo(LiftPosition.inverse(((Pose)a[0]).vec())),
                                 robot.arm.setGrab(((Pose)a[0]).h, robot.lift))))
+                .addTransition(robotStates.WALL, robotStates.WALL, a -> new SeqCommand(
+                        new WaitCommand(t -> {
+                            robot.drive.setTrajectory(null);
+                            robot.drive.setPowers(new Vec(-0.5, 0), 0);}, (double)a[0]),
+                        new WaitCommand(t -> robot.stateMachine.transition(WALL, CHAMBER), 0.3),
+                        new TrajCommandBuilder(robot.drive, wall)
+                            .marker(t -> robot.drive.setPose(wall))
+                            .marker(1, 0, t -> robot.drive.setTrajectory(null))
+                            .marker(robot.stateMachine.getTransition(WALL, CHAMBER))
+                            .setMoveConstraints(specConstraints)
+                            .lineTo(specimen2.vec().combo(1, new Vec(0.5, 0), 1))
+                            .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, WALL))
+                            .lineTo(wall)
+                            .build(opMode.scheduler)))
                 .addTransition(robotStates.GRABBED, robotStates.CLIMB, new ParCommand(
                         FnCommand.once(t -> {
                             robot.arm.setArm(armRest(-PI/2));

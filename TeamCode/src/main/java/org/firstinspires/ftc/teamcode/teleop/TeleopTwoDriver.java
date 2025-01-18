@@ -42,8 +42,7 @@ public class TeleopTwoDriver extends CommandOpMode {
                     } else if (robot.stateMachine.transition(EXTEND_GRAB, GRABBED)) {
                     } else if (robot.stateMachine.transition(BUCKET, EXTEND,
                             new Pose(0, 0, grabRot - robot.drive.getHeading(t)))) {
-                    } else if (robot.stateMachine.transition(CHAMBER, WALL)) {
-                    } else if (robot.stateMachine.transition(WALL, CHAMBER)) {}}),
+                    } else if (robot.stateMachine.transition(WALL, WALL, 0d)) {}}),
                 RisingEdgeDetector.listen(() -> gamepad2.left_bumper, t -> {
                     if (robot.stateMachine.transition(EXTEND_GRAB, EXTEND)) {
                     } else if (robot.stateMachine.transition(GRABBED, EXTEND,
@@ -67,15 +66,17 @@ public class TeleopTwoDriver extends CommandOpMode {
             if (ang.norm() > 0.5) {
                 grabRot = ang.angle();
             }
-            double f = gamepad1.right_trigger > 0.1 ? 0.25 : 1;
-            Vec p = new Vec(-gamepad1.left_stick_y * f, -gamepad1.left_stick_x * f)
-                    .rotate(-robot.drive.getHeading(t));
-            double turn = -gamepad1.right_stick_x * f;
-            if (p.norm() + abs(turn) < 0.05) {
-                robot.drive.setPowers(new Vec(0, 0), 0);
-            } else {
-                robot.drive.setPowers(p, turn);
+            if (!scheduler.using(robot.drive)) {
+                double f = gamepad1.right_trigger > 0.1 ? 0.25 : 1;
+                Vec p = new Vec(-gamepad1.left_stick_y * f, -gamepad1.left_stick_x * f)
+                        .rotate(-robot.drive.getHeading(t));
+                double turn = -gamepad1.right_stick_x * f;
+                if (p.norm() + abs(turn) < 0.05) {
+                    robot.drive.setPowers(new Vec(0, 0), 0);
+                } else {
+                    robot.drive.setPowers(p, turn);
+                }
             }
-        }, true, robot.drive));
+        }));
     }
 }

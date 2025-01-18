@@ -5,6 +5,8 @@ import static java.lang.Math.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.command.Command;
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.RisingEdgeDetector;
@@ -42,8 +44,7 @@ public class TeleopOneDriver extends CommandOpMode {
                 } else if (robot.stateMachine.transition(EXTEND_GRAB, GRABBED)) {
                 } else if (robot.stateMachine.transition(BUCKET, EXTEND,
                         new Pose(0, 0, grabRot - robot.drive.getHeading(t)))) {
-                } else if (robot.stateMachine.transition(CHAMBER, WALL)) {
-                } else if (robot.stateMachine.transition(WALL, CHAMBER)) {}}),
+                } else if (robot.stateMachine.transition(WALL, WALL, 0d)) {}}),
             RisingEdgeDetector.listen(() -> gamepad1.left_bumper, t -> {
                 if (robot.stateMachine.transition(EXTEND_GRAB, EXTEND)) {
                 } else if (robot.stateMachine.transition(GRABBED, EXTEND,
@@ -70,7 +71,7 @@ public class TeleopOneDriver extends CommandOpMode {
                         schedule(robot.lift.adjust(pos/*.rotate(-robot.drive.getHeading())*/.mult(pos.norm()), 0.05));
                     }
                 }
-            } else {
+            } else if (!scheduler.using(robot.drive)) {
                 double f = gamepad1.right_trigger > 0.1 ? 0.25 : 1;
                 Vec p = new Vec(-gamepad1.left_stick_y * f, -gamepad1.left_stick_x * f)
                         .rotate(-robot.drive.getHeading(t));
@@ -82,6 +83,6 @@ public class TeleopOneDriver extends CommandOpMode {
                 }
             }
             System.out.println(robot.drive.getHeading(t));
-        }, true, robot.drive));
+        }));
     }
 }

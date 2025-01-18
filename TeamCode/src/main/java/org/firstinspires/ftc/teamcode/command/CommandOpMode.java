@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.ValueStorage;
 public abstract class CommandOpMode extends LinearOpMode {
-    protected Scheduler scheduler;
+    public Scheduler scheduler;
     private double alpha = 0.75;
     private double speed = 0;
     private boolean done = false;
