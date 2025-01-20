@@ -63,7 +63,7 @@ public class Lift implements Subsystem {
     public static final LiftPosition liftLowBucket = new LiftPosition (15, 0, pivotUp);
     public static final LiftPosition liftWall1 = new LiftPosition(3.5, -PI/2, PI/2);
     public static final LiftPosition liftWall2 = new LiftPosition(3.5, -1.31, PI/2);
-    public static final LiftPosition liftChamber1 = new LiftPosition(18, 0, 0.85);
+    public static final LiftPosition liftChamber1 = new LiftPosition(18, 0, 0.81);
     public static final LiftPosition climb1 = new LiftPosition(17.5, 0, pivotUp);
     public static final LiftPosition climb2 = new LiftPosition(16, 0, pivotUp);
     public static final LiftPosition climb3 = new LiftPosition(8, 0, pivotUp);
@@ -121,7 +121,7 @@ public class Lift implements Subsystem {
     public static final PidfCoefficients turretClimbCoeffs = new PidfCoefficients(0.25, 0, 0);
     public static double pivotVm = 7;
     public static double pivotAi = 50;
-    public static double pivotAf = 20;
+    public static double pivotAf = 15;
     public static final AsymConstraints pivotDefaultConstraints = new AsymConstraints(pivotVm, pivotAi, pivotAf);
     public static final AsymConstraints pivotBackConstraints = new AsymConstraints(2, 16, 16);
     public static final AsymConstraints pivotClimbConstraints = new AsymConstraints(2, 8, 8);
