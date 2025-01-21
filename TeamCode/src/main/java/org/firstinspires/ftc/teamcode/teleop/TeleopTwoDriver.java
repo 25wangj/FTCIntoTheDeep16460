@@ -47,7 +47,8 @@ public class TeleopTwoDriver extends CommandOpMode {
                     if (robot.stateMachine.transition(EXTEND_GRAB, EXTEND)) {
                     } else if (robot.stateMachine.transition(GRABBED, EXTEND,
                             new Pose(12, 0, grabRot - robot.drive.pose(t).h))) {
-                    } else if (robot.stateMachine.transition(WALL, GRABBED)) {}}),
+                    } else if (robot.stateMachine.transition(WALL, EXTEND,
+                            new Pose(0, 0, grabRot - robot.drive.pose(t).h))) {}}),
                 RisingEdgeDetector.listen(() -> gamepad1.start, t -> {
                     if (robot.stateMachine.transition(GRABBED, CLIMB)) {
                     } else if (robot.stateMachine.transition(CLIMB, CLIMBED)) {}}),

@@ -112,6 +112,19 @@ public class RobotStateMachine {
                             .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, WALL))
                             .lineTo(wall)
                             .build(opMode.scheduler)))
+                .addTransition(robotStates.WALL, robotStates.EXTEND, a -> new SeqCommand(
+                        new WaitCommand(t -> {
+                            robot.stateMachine.transition(WALL, CHAMBER);
+                            robot.drive.setTrajectory(null);
+                            robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.3),
+                        new TrajCommandBuilder(robot.drive, wall)
+                                .marker(t -> robot.drive.setPose(wall))
+                                .marker(1, 0, t -> robot.drive.setTrajectory(null))
+                                .marker(robot.stateMachine.getTransition(WALL, CHAMBER))
+                                .setMoveConstraints(specConstraints)
+                                .lineTo(specimen2.vec().combo(1, new Vec(0.5, 0), 1))
+                                .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, robotStates.EXTEND, a))
+                                .build(opMode.scheduler)))
                 .addTransition(robotStates.GRABBED, robotStates.CLIMB, new ParCommand(
                         FnCommand.once(t -> {
                             robot.arm.setArm(armRest(-PI/2));

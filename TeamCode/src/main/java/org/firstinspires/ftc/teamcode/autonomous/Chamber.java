@@ -50,10 +50,9 @@ public class Chamber extends AbstractAutonomous {
                 .lineTo(specimen1)
                 .marker(robot.stateMachine.getTransition(GRABBED, CHAMBER))
                 .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, EXTEND,
-                        new Pose(0, 0, PI/4)))
+                        new Pose(18, 0, PI/4)))
                 .setMoveConstraints(sampleConstraints)
                 .lineTo(sample1)
-                .marker(1, -0.8, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB))
                 .pause(0.15)
                 .setTurnConstraints(sampleTurnConstraints)
