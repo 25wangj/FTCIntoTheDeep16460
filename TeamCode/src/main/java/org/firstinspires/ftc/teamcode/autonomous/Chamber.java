@@ -31,7 +31,7 @@ public class Chamber extends AbstractAutonomous {
     private Pose drop2 = new Pose(-47.75, 47, -7*PI/6);
     public static final Pose wall = new Pose(-29, 64, -PI/2);
     public static final Pose specimen2 = new Pose(-4.5, 40, -PI/2);
-    private Pose bucket = new Pose(60, 56, -3*PI/4);
+    private Pose bucket = new Pose(58, 54, -3*PI/4);
     private Pose park = new Pose(-35, 60, -PI);
     private int config = 0;
     @Override
@@ -88,6 +88,8 @@ public class Chamber extends AbstractAutonomous {
                     new WaitCommand(t -> robot.stateMachine.transition(WALL, GRABBED), 0.3),
                     new TrajCommandBuilder(robot.drive, wall)
                         .setMoveConstraints(sampleConstraints)
+                        .setVel(NaN)
+                        .lineTo(new Pose(40, 54, -3*PI/4))
                         .lineTo(bucket)
                         .marker(1, -1.75, robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket))
                         .marker(1, -0.15, new SeqCommand(

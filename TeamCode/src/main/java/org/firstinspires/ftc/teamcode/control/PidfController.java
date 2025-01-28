@@ -34,7 +34,8 @@ public class PidfController {
         if (e * lastE < 0) {
             reset();
         }
-        val = coeffs.kp * e + coeffs.ki * i + coeffs.kd * d + coeffs.kf.applyAsDouble(ff);
+        double[] k = coeffs.k.apply(ff);
+        val = k[0] * e + k[1] * i + k[2] * d + k[3];
         lastTime = time;
         lastE = e;
     }
@@ -49,7 +50,8 @@ public class PidfController {
         if (e * lastE < 0) {
             reset();
         }
-        val = coeffs.kp * e + coeffs.ki * i + coeffs.kd * d + coeffs.kf.applyAsDouble(ff);
+        double[] k = coeffs.k.apply(ff);
+        val = k[0] * e + k[1] * i + k[2] * d + k[3];
         lastTime = time;
         lastE = e;
     }

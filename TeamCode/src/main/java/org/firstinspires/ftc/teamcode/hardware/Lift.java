@@ -78,16 +78,18 @@ public class Lift implements Subsystem {
     public static double pivotKp = 5;
     public static double pivotKi = 0;
     public static double pivotKd = 0;
+    public static double pivotKl = 0.04;
     public static double pivotKgs = 0.02;
-    public static double pivotKgd = 0.013;
+    public static double pivotKgd = 0.65;
     public static double pivotKv = 0.15;
     public static double pivotKa = 0.01;
-    public static final PidfCoefficients pivotCoeffs = new PidfCoefficients(
-        pivotKp, pivotKi, pivotKd, a -> {
+    public static final PidfCoefficients pivotCoeffs = new PidfCoefficients(a -> {
             MotionState pivotState = (MotionState)a[0];
             MotionState liftState = (MotionState)a[1];
-            return (pivotState.x == pivotUp) ? 0.25 : (pivotKgs + pivotKgd * liftState.x) * cos(pivotState.x)
-                    + pivotKv * pivotState.v + pivotKa * pivotState.a;});
+            double fl = 1 + pivotKl * liftState.x;
+            double fg = 1 + pivotKgd * liftState.x;
+            return new double[] {pivotKp * fl, pivotKi * fl, pivotKd * fl, (pivotState.x == pivotUp) ? 0.25 :
+                    ((pivotKv * pivotState.v + pivotKa * pivotState.a) * fl + pivotKgs * cos(pivotState.x) * fg)};});
     public static final PidfCoefficients pivotClimbCoeffs = new PidfCoefficients(15, 0 ,0, a -> {
             MotionState pivotState = (MotionState)a[0];
             return 0.5 * pivotState.v;});
@@ -123,7 +125,6 @@ public class Lift implements Subsystem {
     public static double pivotAi = 50;
     public static double pivotAf = 15;
     public static final AsymConstraints pivotDefaultConstraints = new AsymConstraints(pivotVm, pivotAi, pivotAf);
-    public static final AsymConstraints pivotBackConstraints = new AsymConstraints(2, 16, 16);
     public static final AsymConstraints pivotClimbConstraints = new AsymConstraints(2, 8, 8);
     public static double liftVm = 75;
     public static double liftAi = 750;
@@ -236,7 +237,7 @@ public class Lift implements Subsystem {
                         turretProfile.tf(), new MotionState(0));
             } else if (bucket) {
                 MotionProfile pivotBackProfile = AsymProfile.extendAsym(pivotProfile,
-                        pivotBackConstraints, t, new MotionState(PI/2));
+                        pivotDefaultConstraints, t, new MotionState(PI/2));
                 liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
                         max(turretProfile.tf(), pivotBackProfile.tf()), new MotionState(0));
                 double dt = AsymProfile.extendAsym(pivotBackProfile, pivotConstraints, t,
