@@ -18,7 +18,7 @@ public class TeleopTwoDriver extends CommandOpMode {
     private double grabRot = 0;
     @Override
     public void initOpMode() {
-        robot = new Robot(this, false);
+        robot = new Robot(this, false, System.nanoTime() * 1e-9);
         scheduler.addListener(RisingEdgeDetector.listen(() -> gamepad1.ps, robot.drive.setHeading(-PI/2)),
                 RisingEdgeDetector.listen(() -> gamepad2.a, t -> {
                     if (robot.stateMachine.transition(GRABBED, BUCKET, liftHighBucket)) {
@@ -36,18 +36,21 @@ public class TeleopTwoDriver extends CommandOpMode {
                     if (robot.stateMachine.transition(GRABBED, WALL)) {
                     } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
                         schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(6, 0))));
-                    }}),
+                    } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(WALL, CHAMBER)) {}}),
                 RisingEdgeDetector.listen(() -> gamepad2.right_bumper, t -> {
                     if (robot.stateMachine.transition(EXTEND, EXTEND_GRAB)) {
                     } else if (robot.stateMachine.transition(EXTEND_GRAB, GRABBED)) {
                     } else if (robot.stateMachine.transition(BUCKET, EXTEND,
                             new Pose(0, 0, grabRot - robot.drive.pose(t).h))) {
-                    } else if (robot.stateMachine.transition(WALL, WALL, 0d)) {}}),
+                    } else if (robot.stateMachine.transition(WALL, WALL, 0d)) {
+                    } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(CHAMBER, WALL)) {}}),
                 RisingEdgeDetector.listen(() -> gamepad2.left_bumper, t -> {
                     if (robot.stateMachine.transition(EXTEND_GRAB, EXTEND)) {
                     } else if (robot.stateMachine.transition(GRABBED, EXTEND,
                             new Pose(12, 0, grabRot - robot.drive.pose(t).h))) {
                     } else if (robot.stateMachine.transition(WALL, EXTEND,
+                            new Pose(0, 0, grabRot - robot.drive.pose(t).h))) {
+                    } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(CHAMBER, EXTEND,
                             new Pose(0, 0, grabRot - robot.drive.pose(t).h))) {}}),
                 RisingEdgeDetector.listen(() -> gamepad1.start, t -> {
                     if (robot.stateMachine.transition(GRABBED, CLIMB)) {

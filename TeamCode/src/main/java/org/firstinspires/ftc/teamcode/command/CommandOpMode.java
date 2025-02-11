@@ -22,6 +22,7 @@ public abstract class CommandOpMode extends LinearOpMode {
         while (!isStarted() && !isStopRequested()) {
             waitOpMode();
             scheduler.run(false);
+            telemetry.addLine("Waiting");
             telemetry.update();
         }
         startOpMode();

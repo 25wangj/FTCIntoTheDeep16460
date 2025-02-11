@@ -28,9 +28,9 @@ public class Bucket extends AbstractAutonomous {
     private Pose park = new Pose(24, 12, -PI);
     private int config = 0;
     @Override
-    public void initAutonomous() {
+    public void chooseConfig() {
         while (config == 0 && !isStopRequested()) {
-            telemetry.addLine("Press A for sample, B for specimen");
+            telemetry.addLine("Press A for sample, B for park");
             telemetry.update();
             if (gamepad1.a) {
                 config = 1;
@@ -38,6 +38,9 @@ public class Bucket extends AbstractAutonomous {
                 config = 2;
             }
         }
+    }
+    @Override
+    public void initAutonomous() {
         Command traj1;
         if (config == 1) {
             start = new Pose(31, 64, -PI);

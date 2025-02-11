@@ -46,7 +46,7 @@ public class Arm implements Subsystem {
     private ServoImplEx claw;
     private ArmPosition armPos = null;
     private boolean wristFlipped = false;
-    public Arm(CommandOpMode opMode, boolean auto) {
+    public Arm(CommandOpMode opMode, boolean auto, double time) {
         opMode.register(this);
         arm = opMode.hardwareMap.get(ServoImplEx.class, "arm");
         diffR = opMode.hardwareMap.get(ServoImplEx.class, "diffR");

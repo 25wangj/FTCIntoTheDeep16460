@@ -35,7 +35,7 @@ public class Chamber extends AbstractAutonomous {
     private Pose park = new Pose(-35, 60, -PI);
     private int config = 0;
     @Override
-    public void initAutonomous() {
+    public void chooseConfig() {
         while (config == 0 && !isStopRequested()) {
             telemetry.addLine("Press A for sample, B for park");
             telemetry.update();
@@ -45,6 +45,9 @@ public class Chamber extends AbstractAutonomous {
                 config = 2;
             }
         }
+    }
+    @Override
+    public void initAutonomous() {
         Command traj1 = new TrajCommandBuilder(robot.drive, start)
                 .setMoveConstraints(specConstraints)
                 .lineTo(specimen1)

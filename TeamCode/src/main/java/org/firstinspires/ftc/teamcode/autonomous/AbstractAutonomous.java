@@ -6,10 +6,12 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 public abstract class AbstractAutonomous extends CommandOpMode {
     protected Robot robot;
     protected Side side = Side.BLUE;
+    public void chooseConfig() {}
     public abstract void initAutonomous();
     @Override
     public void initOpMode() {
-        robot = new Robot(this, true);
+        chooseConfig();
+        robot = new Robot(this, true, System.nanoTime() * 1e-9);
         initAutonomous();
     }
     @Override

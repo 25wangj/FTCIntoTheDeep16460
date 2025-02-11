@@ -60,7 +60,7 @@ public class RobotStateMachine {
                             robot.lift.goTo(liftWall1),
                             new FnCommand(t -> robot.arm.setArm(armWall1), t -> {}, (t, b) -> {
                                 robot.arm.setArm(armWall2);
-                                robot.arm.setClaw(false);}, t -> t > robot.lift.restTime() - 0.15, robot.arm))))
+                                robot.arm.setClaw(false);}, t -> t > robot.lift.restTime(), robot.arm))))
                 .addTransition(robotStates.WALL, robotStates.CHAMBER, a -> new SeqCommand(
                         new WaitCommand(t -> robot.arm.setArm(armWall3), 0.15, robot.arm),
                         new WaitCommand(t -> robot.arm.setClaw(true), 0.15, robot.arm),

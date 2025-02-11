@@ -17,16 +17,9 @@ public class Scheduler {
     private Set<Listener> listeners = new HashSet<>();
     private Queue<Command> added = new ArrayDeque<>();
     private LinkedHashMap<Command, Boolean> finished = new LinkedHashMap<>();
-    private ElapsedTime clock;
-    protected double lastTime = 0;
-    public Scheduler() {
-        this(new ElapsedTime());
-    }
-    public Scheduler(ElapsedTime clock) {
-        this.clock = clock;
-    }
+    public double lastTime = System.nanoTime() * 1e-9;
     public double run(boolean active) {
-        double time = clock.seconds();
+        double time = System.nanoTime() * 1e-9;
         for (Subsystem subsystem : subsystems.keySet()) {
             subsystem.update(time, active);
         }

@@ -27,7 +27,7 @@ public class SidewaysTest extends CommandOpMode {
     private MecanumDrive drive;
     @Override
     public void initOpMode() {
-        drive = new MecanumDrive(this, true);
+        drive = new MecanumDrive(this, true, 0);
         drive.setPose(new Pose(0, 0, 0));
         scheduler.register(drive);
         Command traj = new TrajCommandBuilder(drive, new Pose(0, 0, 0))
