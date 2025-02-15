@@ -110,7 +110,7 @@ public class Chamber extends AbstractAutonomous {
             traj2 = new SeqCommand(
                     new WaitCommand(t -> {
                         robot.drive.setTrajectory(null);
-                        robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.25),
+                        robot.drive.setPowers(new Vec(-0.3, 0), 0);}, 0.25),
                     new WaitCommand(t -> robot.stateMachine.transition(WALL, GRABBED), 0.3),
                     new TrajCommandBuilder(robot.drive, wall)
                     .marker(t -> robot.drive.setPose(wall))

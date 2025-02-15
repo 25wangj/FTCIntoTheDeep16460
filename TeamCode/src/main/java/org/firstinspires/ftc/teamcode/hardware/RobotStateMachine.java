@@ -101,7 +101,7 @@ public class RobotStateMachine {
                 .addTransition(robotStates.WALL, robotStates.WALL, a -> new SeqCommand(
                         new WaitCommand(t -> {
                             robot.drive.setTrajectory(null);
-                            robot.drive.setPowers(new Vec(-0.5, 0), 0);}, (double)a[0]),
+                            robot.drive.setPowers(new Vec(-0.3, 0), 0);}, (double)a[0]),
                         new WaitCommand(t -> robot.stateMachine.transition(WALL, CHAMBER), 0.3),
                         new TrajCommandBuilder(robot.drive, wall)
                             .marker(t -> robot.drive.setPose(wall))
