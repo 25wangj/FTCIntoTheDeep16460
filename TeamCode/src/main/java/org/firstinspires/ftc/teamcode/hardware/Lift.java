@@ -60,7 +60,7 @@ public class Lift implements Subsystem {
     public static final double liftXMax = 24;
     public static final double liftYMax = 5.5;
     public static final double pivotUp = 1.71;
-    public static final LiftPosition liftHighBucket = new LiftPosition(30.5, 0, pivotUp);
+    public static final LiftPosition liftHighBucket = new LiftPosition(31.5, 0, pivotUp);
     public static final LiftPosition liftLowBucket = new LiftPosition (15, 0, pivotUp);
     public static final LiftPosition liftWall1 = new LiftPosition(3.5, -PI/2, PI/2);
     public static final LiftPosition liftWall2 = new LiftPosition(3.5, -1.31, PI/2);
@@ -154,7 +154,7 @@ public class Lift implements Subsystem {
     private static double liftLOffset = 0;
     private double zeroTime;
     private boolean climbing = false;
-    public Lift(MecanumDrive drive, CommandOpMode opMode, boolean auto, double time) {
+    public Lift(Robot robot, CommandOpMode opMode, boolean auto, double time) {
         opMode.register(this);
         pivot = opMode.hardwareMap.get(DcMotorEx.class, "pivot");
         liftR = opMode.hardwareMap.get(DcMotorEx.class, "liftR");
@@ -163,7 +163,7 @@ public class Lift implements Subsystem {
         pivot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        this.drive = drive;
+        this.drive = robot.drive;
         if (auto) {
             zeroTime = NaN;
             reset();

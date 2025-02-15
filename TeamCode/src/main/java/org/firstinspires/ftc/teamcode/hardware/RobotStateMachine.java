@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.movement.Vec;
 
 public class RobotStateMachine {
     public enum robotStates {
-        EXTEND, EXTEND_GRAB, GRABBED, BUCKET, WALL, CHAMBER, CLIMB, CLIMBED
+        EXTEND, EXTEND_GRAB, GRABBED, BUCKET, WALL, CHAMBER, CLIMB, CLIMBED, CAMERA
     }
     public static StateMachine<robotStates> get(CommandOpMode opMode, Robot robot, robotStates state) {
         StateMachineBuilder<robotStates> builder = new StateMachineBuilder<robotStates>(opMode)

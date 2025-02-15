@@ -18,7 +18,7 @@ public class TeleopTwoDriver extends CommandOpMode {
     private double grabRot = 0;
     @Override
     public void initOpMode() {
-        robot = new Robot(this, false, System.nanoTime() * 1e-9);
+        robot = new Robot(this, false, lastSide, System.nanoTime() * 1e-9);
         scheduler.addListener(RisingEdgeDetector.listen(() -> gamepad1.ps, robot.drive.setHeading(-PI/2)),
                 RisingEdgeDetector.listen(() -> gamepad2.a, t -> {
                     if (robot.stateMachine.transition(GRABBED, BUCKET, liftHighBucket)) {

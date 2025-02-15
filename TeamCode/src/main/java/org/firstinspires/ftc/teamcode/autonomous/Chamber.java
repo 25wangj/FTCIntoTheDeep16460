@@ -26,9 +26,9 @@ public class Chamber extends AbstractAutonomous {
     private Pose specimen1 = new Pose(-6.5, 39, -PI/2);
     private Pose sample1 = new Pose(-32, 42, -3*PI/4);
     private Pose sample2 = new Pose(-42.5, 42, -3*PI/4);
-    private Pose sample3 = new Pose(-53, 42, -3*PI/4);
-    private Pose drop1 = new Pose(-37.25, 47, -7*PI/6);
-    private Pose drop2 = new Pose(-47.75, 47, -7*PI/6);
+    private Pose sample3 = new Pose(-52.5, 42, -3*PI/4);
+    private Pose drop1 = new Pose(-37.5, 48, -7*PI/6);
+    private Pose drop2 = new Pose(-47.5, 48, -7*PI/6);
     public static final Pose wall = new Pose(-29, 64, -PI/2);
     public static final Pose specimen2 = new Pose(-4.5, 40, -PI/2);
     private Pose bucket = new Pose(58, 54, -3*PI/4);
@@ -53,9 +53,10 @@ public class Chamber extends AbstractAutonomous {
                 .lineTo(specimen1)
                 .marker(robot.stateMachine.getTransition(GRABBED, CHAMBER))
                 .marker(1, -0.15, robot.stateMachine.getTransition(CHAMBER, EXTEND,
-                        new Pose(18, 0, PI/4)))
+                        new Pose(0, 0, PI/4)))
                 .setMoveConstraints(sampleConstraints)
                 .lineTo(sample1)
+                .marker(1, -0.75, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB))
                 .pause(0.15)
                 .setTurnConstraints(sampleTurnConstraints)

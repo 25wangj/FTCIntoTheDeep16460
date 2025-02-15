@@ -11,11 +11,8 @@ public abstract class AbstractAutonomous extends CommandOpMode {
     @Override
     public void initOpMode() {
         chooseConfig();
-        robot = new Robot(this, true, System.nanoTime() * 1e-9);
-        initAutonomous();
-    }
-    @Override
-    public void endOpMode(double t) {
         lastSide = side;
+        robot = new Robot(this, true, side, System.nanoTime() * 1e-9);
+        initAutonomous();
     }
 }
