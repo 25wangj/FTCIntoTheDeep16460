@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.Subsystem;
 import org.firstinspires.ftc.teamcode.command.RisingEdgeDetector;
 @Photon
-@Disabled
+//@Disabled
 @TeleOp(name = "ServoTest")
 public class ServoTest extends CommandOpMode {
     private ServoImplEx servo;

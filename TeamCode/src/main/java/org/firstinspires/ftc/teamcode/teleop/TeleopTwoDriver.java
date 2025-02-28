@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop;
-import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.robotStates.*;
+import static org.firstinspires.ftc.teamcode.hardware.Lift.MovementType.*;
+import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.*;
 import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
 import static java.lang.Math.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
@@ -18,24 +19,24 @@ public class TeleopTwoDriver extends CommandOpMode {
     private double grabRot = 0;
     @Override
     public void initOpMode() {
-        robot = new Robot(this, false, lastSide, System.nanoTime() * 1e-9);
+        robot = new Robot(this, false, lastSide);
         scheduler.addListener(RisingEdgeDetector.listen(() -> gamepad1.ps, robot.drive.setHeading(-PI/2)),
                 RisingEdgeDetector.listen(() -> gamepad2.a, t -> {
                     if (robot.stateMachine.transition(GRABBED, BUCKET, liftHighBucket)) {
                     } else if (robot.stateMachine.transition(GRABBED, BUCKET, liftHighBucket)) {
                     } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
-                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(14, 0))));
+                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(14, 0)), PIVOT_FIRST));
                     }}),
                 RisingEdgeDetector.listen(() -> gamepad2.b, t -> {
                     if (robot.stateMachine.transition(GRABBED, BUCKET, liftLowBucket)) {
                     } else if (robot.stateMachine.transition(GRABBED, BUCKET, liftLowBucket)) {
                     } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
-                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(22, 0))));
+                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(22, 0)), PIVOT_FIRST));
                     }}),
                 RisingEdgeDetector.listen(() -> gamepad2.x, t -> {
                     if (robot.stateMachine.transition(GRABBED, WALL)) {
                     } else if (robot.stateMachine.state() == EXTEND || robot.stateMachine.state() == EXTEND_GRAB) {
-                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(6, 0))));
+                        schedule(robot.lift.goTo(LiftPosition.inverse(new Vec(6, 0)), PIVOT_FIRST));
                     } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(WALL, CHAMBER)) {}}),
                 RisingEdgeDetector.listen(() -> gamepad2.right_bumper, t -> {
                     if (robot.stateMachine.transition(EXTEND, EXTEND_GRAB)) {

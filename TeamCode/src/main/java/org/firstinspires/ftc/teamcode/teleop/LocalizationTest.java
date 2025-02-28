@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.movement.Vec;
 @TeleOp(name = "LocalizationTest")
 public class LocalizationTest extends CommandOpMode { @Override
     public void initOpMode() {
-        MecanumDrive drive = new MecanumDrive(this, true, 0);
+        MecanumDrive drive = new MecanumDrive(this, true);
         drive.setPose(new Pose(0, 0, 0));
         scheduler.register(drive);
         scheduler.schedule(FnCommand.repeat(t -> {

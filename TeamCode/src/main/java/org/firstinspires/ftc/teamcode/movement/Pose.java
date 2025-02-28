@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.movement;
 import org.ejml.simple.SimpleMatrix;
+import org.opencv.core.Point3;
+
 public class Pose {
     public final double x;
     public final double y;
@@ -14,6 +16,9 @@ public class Pose {
     }
     public Pose(SimpleMatrix m) {
         this(m.get(0), m.get(1), m.get(2));
+    }
+    public Pose(Point3 p) {
+        this(p.x, p.y, p.z);
     }
     public Vec vec() {
         return new Vec(x, y);

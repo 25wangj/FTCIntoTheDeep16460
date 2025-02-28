@@ -48,7 +48,7 @@ public class MecanumDrive extends MecanumDrivetrain {
     private Servo ptoL;
     private Otos otos;
     private double headingOffset = 0;
-    public MecanumDrive(CommandOpMode opMode, boolean auto, double time) {
+    public MecanumDrive(CommandOpMode opMode, boolean auto) {
         super(trackWidth, driveKs, driveKv, driveKa, strafeMult, new PidfCoefficients(xKp, xKi, xKd),
                 new PidfCoefficients(yKp, yKi, yKd), new PidfCoefficients(turnKp, turnKi, turnKd), moveConstraints, turnConstraints);
         opMode.register(this);

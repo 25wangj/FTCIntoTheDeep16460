@@ -29,16 +29,20 @@ public class Arm implements Subsystem {
         }
     }
     public static final double armUp = 0.35;
+    public static final double armHalf = 0.16;
     public static ArmPosition armRest(double rot) {return new ArmPosition(0, 0, rot);}
+    public static ArmPosition armHalf(double rot) {return new ArmPosition(armHalf, 0, rot);}
     public static ArmPosition armGrab(double rot) {return new ArmPosition(armUp,0, rot);}
-    public static final ArmPosition armBucket = new ArmPosition(armUp, 2.67, -PI/2);
+    public static final ArmPosition armBucket1 = new ArmPosition(0, PI/2, -PI/2);
+    public static final ArmPosition armBucket2 = new ArmPosition(armUp, 2.67, -PI/2);
     public static final ArmPosition armWall1 = new ArmPosition(0, 1.36, -PI/2);
-    public static final ArmPosition armWall2 = new ArmPosition(0, 3.14, -PI/2);
+    public static final ArmPosition armWall2 = new ArmPosition(0, PI, -PI/2);
     public static final ArmPosition armWall3 = new ArmPosition(armUp, 2.79, -PI/2);
     public static final ArmPosition armChamber = new ArmPosition(armUp, 1.22, -PI);
-    public static final ArmPosition armGrabbed = new ArmPosition(armUp, 1.36, -PI/2);
-    public static final double clawOpen = 0.11;
-    public static final double clawClosed = 0.63;
+    public static final ArmPosition armHalfGrabbed = new ArmPosition(armHalf, PI/2, -PI/2);
+    public static final ArmPosition armGrabbed = new ArmPosition(armUp, PI/2, -PI/2);
+    public static final double clawOpen = 0.1;
+    public static final double clawClosed = 0.65;
     public static final double grabHyst = 0.262;
     private ServoImplEx arm;
     private ServoImplEx diffR;
@@ -46,7 +50,7 @@ public class Arm implements Subsystem {
     private ServoImplEx claw;
     private ArmPosition armPos = null;
     private boolean wristFlipped = false;
-    public Arm(CommandOpMode opMode, boolean auto, double time) {
+    public Arm(CommandOpMode opMode, boolean auto) {
         opMode.register(this);
         arm = opMode.hardwareMap.get(ServoImplEx.class, "arm");
         diffR = opMode.hardwareMap.get(ServoImplEx.class, "diffR");
@@ -58,11 +62,11 @@ public class Arm implements Subsystem {
         claw.setPwmRange(new PwmControl.PwmRange(500, 2500));
         if (auto) {
             armPos = armGrabbed;
-            opMode.schedule(FnCommand.once(t -> setClaw(true), this));
+            opMode.schedule(FnCommand.once(t -> setClaw(true)));
         } else {
             opMode.schedule(FnCommand.once(t -> {
                 armPos = armGrabbed;
-                setClaw(true);}, this));
+                setClaw(true);}));
         }
     }
     public void setArm(ArmPosition pos) {

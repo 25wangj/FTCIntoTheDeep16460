@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 import static java.lang.Double.NaN;
 import static java.lang.Math.*;
-import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.robotStates.*;
+import static org.firstinspires.ftc.teamcode.hardware.Lift.MovementType.*;
+import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
-
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.command.Command;
@@ -37,11 +37,11 @@ public class Chamber extends AbstractAutonomous {
     @Override
     public void chooseConfig() {
         while (config == 0 && !isStopRequested()) {
-            telemetry.addLine("Press A for sample, B for park");
+            telemetry.addLine("Press X for sample, Y for park");
             telemetry.update();
-            if (gamepad1.a) {
+            if (gamepad1.x) {
                 config = 1;
-            } else if (gamepad1.b) {
+            } else if (gamepad1.y) {
                 config = 2;
             }
         }
@@ -56,26 +56,26 @@ public class Chamber extends AbstractAutonomous {
                         new Pose(0, 0, PI/4)))
                 .setMoveConstraints(sampleConstraints)
                 .lineTo(sample1)
-                .marker(1, -0.75, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
+                .marker(1, -0.75, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST))
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB))
                 .pause(0.15)
                 .setTurnConstraints(sampleTurnConstraints)
                 .lineTo(drop1)
-                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0))))
-                .marker(1, -0.5, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
+                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0)), PIVOT_FIRST))
+                .marker(1, -0.5, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST))
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))
                 .lineTo(sample2)
-                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0))))
-                .marker(1, -0.55, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
+                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0)), PIVOT_FIRST))
+                .marker(1, -0.55, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST))
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB))
                 .pause(0.15)
                 .lineTo(drop2)
-                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0))))
-                .marker(1, -0.5, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
+                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0)), PIVOT_FIRST))
+                .marker(1, -0.5, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST))
                 .marker(1, -0.15, robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))
                 .lineTo(sample3)
-                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0))))
-                .marker(1, -0.55, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0))))
+                .marker(robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0)), PIVOT_FIRST))
+                .marker(1, -0.55, robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST))
                 .marker(1, -0.15, new SeqCommand(
                         robot.stateMachine.getTransition(EXTEND, GRABBED),
                         robot.stateMachine.getTransition(GRABBED, WALL)))
@@ -88,7 +88,7 @@ public class Chamber extends AbstractAutonomous {
             traj2 = new SeqCommand(
                     new WaitCommand(t -> {
                         robot.drive.setTrajectory(null);
-                        robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.25),
+                        robot.drive.setPowers(new Vec(-0.3, 0), 0);}, 0.25),
                     new WaitCommand(t -> robot.stateMachine.transition(WALL, GRABBED), 0.3),
                     new TrajCommandBuilder(robot.drive, wall)
                         .setMoveConstraints(sampleConstraints)
@@ -96,9 +96,7 @@ public class Chamber extends AbstractAutonomous {
                         .lineTo(new Pose(40, 54, -3*PI/4))
                         .lineTo(bucket)
                         .marker(1, -1.75, robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket))
-                        .marker(1, -0.15, new SeqCommand(
-                                robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(0, 0, 0)),
-                                robot.stateMachine.getTransition(EXTEND, GRABBED)))
+                        .marker(1, -0.15, robot.stateMachine.getTransition(BUCKET, GRABBED))
                         .setMoveConstraints(new AsymConstraints(100, 70, 100))
                         .setTangent(-5*PI/6)
                         .setVel(NaN)
@@ -123,6 +121,5 @@ public class Chamber extends AbstractAutonomous {
                 new RepeatCommand(robot.stateMachine.getTransition(WALL, WALL, 0.25), 4),
                 traj2,
                 FnCommand.once(t -> end())));
-        robot.drive.setPose(start);
     }
 }
