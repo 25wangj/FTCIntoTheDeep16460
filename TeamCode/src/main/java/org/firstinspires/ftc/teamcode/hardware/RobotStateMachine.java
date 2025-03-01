@@ -80,12 +80,16 @@ public class RobotStateMachine {
                         new WaitCommand(t -> robot.arm.setArm(armBucket2), 0.1, robot.arm),
                         new WaitCommand(t -> robot.arm.setClaw(false), 0.15, t -> robot.arm.setArm(armGrabbed)),
                         robot.lift.pivotTo(PI/2),
-                        robot.lift.goTo(LiftPosition.inverse(new Vec(0, 0)), LIFT_RETRACT)))
+                        new ParCommand(
+                            robot.lift.goTo(LiftPosition.inverse(new Vec(0, 0)), LIFT_RETRACT),
+                            FnCommand.once(t -> robot.arm.setClaw(true)))))
                 .addTransition(BUCKET, CAMERA, new SeqCommand(
                         new WaitCommand(t -> robot.arm.setArm(armBucket2), 0.1, robot.arm),
-                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15, t -> robot.arm.setArm(armGrab(0))),
+                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15, t -> robot.arm.setArm(armGrab(-PI/2))),
                         robot.lift.pivotTo(PI/2),
-                        robot.lift.goTo(liftCamera, LIFT_RETRACT)))
+                        new ParCommand(
+                            robot.lift.goTo(liftCamera, LIFT_RETRACT),
+                            FnCommand.once(t -> robot.arm.setArm(armGrab(0))))))
                 .addTransition(GRABBED, WALL, a -> new SeqCommand(
                         new ParCommand(
                             robot.lift.goTo(liftWall1, PIVOT_FIRST),

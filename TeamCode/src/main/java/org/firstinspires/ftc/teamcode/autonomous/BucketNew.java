@@ -1,17 +1,10 @@
 package org.firstinspires.ftc.teamcode.autonomous;
-
-import static org.firstinspires.ftc.teamcode.hardware.Lift.liftHighBucket;
-import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.BUCKET;
-import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.CAMERA;
-import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.EXTEND;
-import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.GRABBED;
-import static org.firstinspires.ftc.teamcode.hardware.Vision.Priority.YELLOW_COLOR;
-import static java.lang.Math.PI;
-
+import static java.lang.Math.*;
+import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.*;
+import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
+import static org.firstinspires.ftc.teamcode.hardware.Vision.Priority.*;
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-
 import org.firstinspires.ftc.teamcode.command.Command;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.ParCommand;
@@ -22,9 +15,8 @@ import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
 
 @Photon
-@Disabled
-@Autonomous(name = "BucketOld")
-public class Bucket extends AbstractAutonomous {
+@Autonomous(name = "Bucket")
+public class BucketNew extends AbstractAutonomous {
     private AsymConstraints grabConstraints = new AsymConstraints(70, 50, 30);
     private AsymConstraints dropConstraints = new AsymConstraints(70, 70, 30);
     private Pose drop1 = new Pose(56, 56, -3*PI/4);
@@ -37,7 +29,7 @@ public class Bucket extends AbstractAutonomous {
     @Override
     public void chooseConfig() {
         while (config == 0 && !isStopRequested()) {
-            telemetry.addLine("Press X for sample, Y for specimen");
+            telemetry.addLine("Press X for cycles, Y for park");
             telemetry.update();
             if (gamepad1.x) {
                 config = 1;

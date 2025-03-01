@@ -11,4 +11,5 @@ public class ValueStorage {
     public static Telemetry telemetry;
     public static Side lastSide = Side.BLUE;
     public static Pose lastPose = new Pose(0, 0, 0);
+    public static double voltage = 0;
 }

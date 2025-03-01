@@ -12,6 +12,7 @@ public abstract class AbstractAutonomous extends CommandOpMode {
     public abstract void initAutonomous();
     @Override
     public void initOpMode() {
+        sleep(250);
         telemetry.addLine("Press A for red, B for blue");
         telemetry.update();
         while (side == null && !isStopRequested()) {

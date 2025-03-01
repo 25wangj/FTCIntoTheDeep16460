@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.hardware;
 import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 import static com.qualcomm.robotcore.util.Range.*;
-import static org.firstinspires.ftc.teamcode.hardware.Lift.MovementType.PIVOT_FIRST;
-
+import static org.firstinspires.ftc.teamcode.hardware.Lift.MovementType.*;
+import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.control.MotionState;
 import org.firstinspires.ftc.teamcode.control.PidfCoefficients;
 import org.firstinspires.ftc.teamcode.control.PidfController;
 import org.firstinspires.ftc.teamcode.control.RampProfile;
+import org.firstinspires.ftc.teamcode.movement.CachingMotor;
 import org.firstinspires.ftc.teamcode.movement.Vec;
 @Config
 public class Lift implements Subsystem {
@@ -143,9 +144,9 @@ public class Lift implements Subsystem {
     public static double turretAf = 25;
     public static final AsymConstraints turretConstraints = new AsymConstraints(turretVm, turretAi, turretAf);
     private double adjustV = 40;
-    private DcMotorEx pivot;
-    private DcMotorEx liftR;
-    private DcMotorEx liftL;
+    private CachingMotor pivot;
+    private CachingMotor liftR;
+    private CachingMotor liftL;
     private MecanumDrive drive;
     private PidfController pivotPidf = new PidfController(pivotCoeffs);
     private PidfController liftPidf = new PidfController(liftCoeffs);
@@ -162,13 +163,13 @@ public class Lift implements Subsystem {
     private boolean climbing = false;
     public Lift(Robot robot, CommandOpMode opMode, boolean auto) {
         opMode.register(this);
-        pivot = opMode.hardwareMap.get(DcMotorEx.class, "pivot");
-        liftR = opMode.hardwareMap.get(DcMotorEx.class, "liftR");
-        liftL = opMode.hardwareMap.get(DcMotorEx.class, "liftL");
-        liftL.setDirection(DcMotorSimple.Direction.REVERSE);
-        pivot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        liftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        liftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        pivot = new CachingMotor(opMode.hardwareMap.get(DcMotorEx.class, "pivot"), () -> voltage);
+        liftR = new CachingMotor(opMode.hardwareMap.get(DcMotorEx.class, "liftR"), () -> voltage);
+        liftL = new CachingMotor(opMode.hardwareMap.get(DcMotorEx.class, "liftL"), () -> voltage);
+        liftL.motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        pivot.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        liftR.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        liftL.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         this.drive = robot.drive;
         if (auto) {
             zeroTime = NaN;
@@ -193,9 +194,9 @@ public class Lift implements Subsystem {
         return max(pivotProfile.tf(), max(liftProfile.tf(), turretProfile.tf()));
     }
     public void reset() {
-        pivotOffset = pivot.getCurrentPosition();
-        liftROffset = liftR.getCurrentPosition();
-        liftLOffset = liftL.getCurrentPosition();
+        pivotOffset = pivot.motor.getCurrentPosition();
+        liftROffset = liftR.motor.getCurrentPosition();
+        liftLOffset = liftL.motor.getCurrentPosition();
     }
     public Command pivotTo(double pivotAng, AsymConstraints... pivotOverride) {
         return new FnCommand(t -> {
@@ -384,8 +385,9 @@ public class Lift implements Subsystem {
     }
     @Override
     public void update(double t, boolean active) {
-        LiftPosition pos = LiftPosition.fromPos(pivot.getCurrentPosition() - pivotOffset,
-                liftR.getCurrentPosition() - liftROffset, liftL.getCurrentPosition() - liftLOffset);
+        LiftPosition pos = LiftPosition.fromPos(pivot.motor.getCurrentPosition() - pivotOffset,
+                liftR.motor.getCurrentPosition() - liftROffset,
+                liftL.motor.getCurrentPosition() - liftLOffset);
         MotionState pivotState = pivotProfile.state(t);
         MotionState liftState = liftProfile.state(t);
         MotionState turretState = turretProfile.state(t);

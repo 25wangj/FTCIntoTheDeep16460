@@ -12,6 +12,7 @@ public class Robot {
     public final Vision vision;
     public StateMachine<RobotStateMachine.RobotStates> stateMachine;
     public Robot(CommandOpMode opMode, boolean auto, Side side) {
+        voltage = opMode.hardwareMap.voltageSensor.iterator().next().getVoltage();
         drive = new MecanumDrive(opMode, auto);
         lift = new Lift(this, opMode, auto);
         arm = new Arm(opMode, auto);

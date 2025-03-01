@@ -5,10 +5,10 @@ import org.firstinspires.ftc.teamcode.control.AsymProfile.AsymConstraints;
 import org.firstinspires.ftc.teamcode.control.PidfCoefficients;
 import org.firstinspires.ftc.teamcode.control.PidfController;
 public abstract class MecanumDrivetrain extends Drivetrain {
-    protected DcMotorEx fr;
-    protected DcMotorEx fl;
-    protected DcMotorEx br;
-    protected DcMotorEx bl;
+    protected CachingMotor fr;
+    protected CachingMotor fl;
+    protected CachingMotor br;
+    protected CachingMotor bl;
     private double trackWidth;
     private double ks;
     private double kv;

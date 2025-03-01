@@ -22,7 +22,6 @@ public class Chamber extends AbstractAutonomous {
     public static final AsymConstraints sampleConstraints = new AsymConstraints(70, 70, 30);
     public static final AsymConstraints specConstraints = new AsymConstraints(70, 70, 40);
     private AsymConstraints sampleTurnConstraints = new AsymConstraints(4, 8, 4);
-    private Pose start = new Pose(-6.5, 63, -PI/2);
     private Pose specimen1 = new Pose(-6.5, 39, -PI/2);
     private Pose sample1 = new Pose(-32, 42, -3*PI/4);
     private Pose sample2 = new Pose(-42.5, 42, -3*PI/4);
@@ -48,6 +47,7 @@ public class Chamber extends AbstractAutonomous {
     }
     @Override
     public void initAutonomous() {
+        start = new Pose(-6.5, 63, -PI/2);
         Command traj1 = new TrajCommandBuilder(robot.drive, start)
                 .setMoveConstraints(specConstraints)
                 .lineTo(specimen1)

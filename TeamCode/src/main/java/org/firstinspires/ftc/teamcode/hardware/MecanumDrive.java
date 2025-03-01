@@ -12,10 +12,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.command.Command;
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
-import org.firstinspires.ftc.teamcode.command.RepeatCommand;
-import org.firstinspires.ftc.teamcode.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.control.AsymProfile.AsymConstraints;
 import org.firstinspires.ftc.teamcode.control.PidfCoefficients;
+import org.firstinspires.ftc.teamcode.movement.CachingMotor;
 import org.firstinspires.ftc.teamcode.movement.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 @Config
@@ -47,21 +46,20 @@ public class MecanumDrive extends MecanumDrivetrain {
     private Servo ptoR;
     private Servo ptoL;
     private Otos otos;
-    private double headingOffset = 0;
     public MecanumDrive(CommandOpMode opMode, boolean auto) {
         super(trackWidth, driveKs, driveKv, driveKa, strafeMult, new PidfCoefficients(xKp, xKi, xKd),
                 new PidfCoefficients(yKp, yKi, yKd), new PidfCoefficients(turnKp, turnKi, turnKd), moveConstraints, turnConstraints);
         opMode.register(this);
-        fr = opMode.hardwareMap.get(DcMotorEx.class, "fr");
-        fl = opMode.hardwareMap.get(DcMotorEx.class, "fl");
-        br = opMode.hardwareMap.get(DcMotorEx.class, "br");
-        bl = opMode.hardwareMap.get(DcMotorEx.class, "bl");
-        fr.setDirection(DcMotorSimple.Direction.REVERSE);
-        br.setDirection(DcMotorSimple.Direction.REVERSE);
-        fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fr = new CachingMotor(opMode.hardwareMap.get(DcMotorEx.class, "fr"), () -> voltage);
+        fl = new CachingMotor(opMode.hardwareMap.get(DcMotorEx.class, "fl"), () -> voltage);
+        br = new CachingMotor(opMode.hardwareMap.get(DcMotorEx.class, "br"), () -> voltage);
+        bl = new CachingMotor(opMode.hardwareMap.get(DcMotorEx.class, "bl"), () -> voltage);
+        fr.motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        fr.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fl.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        br.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bl.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         ptoR = opMode.hardwareMap.get(Servo.class, "ptoR");
         ptoL = opMode.hardwareMap.get(Servo.class, "ptoL");
         otos = opMode.hardwareMap.get(Otos.class, "otos");
