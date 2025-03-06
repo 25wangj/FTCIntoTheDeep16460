@@ -114,10 +114,10 @@ public class RobotStateMachine {
                                         t -> robot.arm.setArm(armGrabbed), robot.arm))))
                 .addTransition(CHAMBER, WALL, a -> new SeqCommand(
                         robot.lift.specimen(),
+                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15),
                         new ParCommand(
                                 robot.lift.goTo(liftWall1, TURRET_LAST),
                                 new SeqCommand(
-                                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15),
                                         new FnCommand(t -> robot.arm.setArm(armWall1), t -> {}, (t, b) -> {
                                         robot.arm.setArm(armWall2);
                                         robot.arm.setClaw(false);}, t -> t > robot.lift.restTime() - 0.15, robot.arm)))))
@@ -126,12 +126,11 @@ public class RobotStateMachine {
                         FnCommand.once(t -> robot.arm.setArm(armChamber), robot.arm)))
                 .addTransition(CHAMBER, EXTEND, a -> new SeqCommand(
                         robot.lift.specimen(),
+                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15,
+                                t -> robot.arm.setArm(armGrab(-PI)), robot.arm),
                         new ParCommand(
                             robot.lift.goTo(LiftPosition.inverse(((Pose)a[0]).vec()), LIFT_RETRACT),
-                            new SeqCommand(
-                                new WaitCommand(t -> robot.arm.setClaw(false), 0.15,
-                                    t -> robot.arm.setArm(armGrab(-PI)), robot.arm),
-                                robot.arm.setGrab(((Pose)a[0]).h, robot.lift)))))
+                            robot.arm.setGrab(((Pose)a[0]).h, robot.lift))))
                 .addTransition(WALL, WALL, a -> new SeqCommand(
                         new WaitCommand(t -> {
                             robot.drive.setTrajectory(null);

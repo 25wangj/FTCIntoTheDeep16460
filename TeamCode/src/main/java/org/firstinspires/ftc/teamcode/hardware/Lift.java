@@ -368,18 +368,19 @@ public class Lift implements Subsystem {
                 new ParCommand(
                         goTo(climb5, PIVOT_FIRST),
                         new WaitCommand(0.25, t -> drive.setPowers(new Vec(0, 0), 0))),
+                new WaitCommand(0.25),
                 goTo(climb6, PIVOT_FIRST),
                 FnCommand.once(t -> drive.setPto(true)),
                 goTo(climb7, PIVOT_FIRST),
                 FnCommand.once(t -> setClimb(true)),
                 goTo(climb8, PIVOT_FIRST),
                 goTo(climb9, PIVOT_FIRST),
+                goTo(climb10, PIVOT_FIRST),
                 FnCommand.once(t -> {
+                    liftConstraints = new AsymConstraints(10, 20, 20);
                     setClimb(false);
                     drive.setPto(false);
                     drive.setPowers(new Vec(0, 0), 0);}),
-                goTo(climb10, PIVOT_FIRST),
-                FnCommand.once(t -> liftConstraints = new AsymConstraints(10, 20, 20)),
                 goTo(climb11, PIVOT_FIRST),
                 FnCommand.repeat(t -> {}));
     }

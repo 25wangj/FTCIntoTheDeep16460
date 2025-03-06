@@ -1,12 +1,9 @@
 package org.firstinspires.ftc.teamcode.teleop;
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.opMode;
-import static org.firstinspires.ftc.teamcode.hardware.Arm.ArmPosition.armZero;
 import static java.lang.Math.*;
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.PwmControl;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
@@ -14,7 +11,7 @@ import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.Subsystem;
 import org.firstinspires.ftc.teamcode.command.RisingEdgeDetector;
 @Photon
-//@Disabled
+@Disabled
 @TeleOp(name = "ServoTest")
 public class ServoTest extends CommandOpMode {
     private ServoImplEx servo;
