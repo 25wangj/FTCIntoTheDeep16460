@@ -5,7 +5,7 @@ import java.util.function.DoubleSupplier;
 
 public class CachingMotor {
     public static final int steps = 20;
-    public static final int refVoltage = 12;
+    public static final double refVoltage = 12;
     public final DcMotorEx motor;
     private DoubleSupplier voltage;
     public CachingMotor(DcMotorEx motor, DoubleSupplier voltage) {

@@ -30,7 +30,7 @@ public class Chamber extends AbstractAutonomous {
     private Pose drop2 = new Pose(-47.5, 48, -7*PI/6);
     public static final Pose wall = new Pose(-29, 64, -PI/2);
     public static final Pose specimen2 = new Pose(-4.5, 40, -PI/2);
-    private Pose bucket = new Pose(58, 54, -3*PI/4);
+    private Pose bucket = new Pose(58, 56, -3*PI/4);
     private Pose park = new Pose(-35, 60, -PI);
     private int config = 0;
     @Override

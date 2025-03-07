@@ -23,7 +23,7 @@ public class Bucket extends AbstractAutonomous {
     private Pose drop2 = new Pose(58, 52, -2*PI/3);
     private Pose intake1 = new Pose(48, 32, -PI/2);
     private Pose intake2 = new Pose(58, 32, -PI/2);
-    private Pose intake3 = new Pose(60, 32, -PI/4);
+    private Pose intake3 = new Pose(60, 33, -PI/4);
     private Pose park = new Pose(24, 6, -2.88);
     private int config = 0;
     @Override

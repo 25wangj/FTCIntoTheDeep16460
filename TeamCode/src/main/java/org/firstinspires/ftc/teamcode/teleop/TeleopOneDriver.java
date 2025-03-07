@@ -4,6 +4,8 @@ import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotSta
 import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
 import static java.lang.Math.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.*;
+import static org.firstinspires.ftc.teamcode.movement.CachingMotor.refVoltage;
+
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -77,7 +79,8 @@ public class TeleopOneDriver extends CommandOpMode {
                     }
                 }
             } else if (!scheduler.using(robot.drive)) {
-                double f = gamepad1.right_trigger > 0.1 ? 0.25 : 1;
+                double f = voltage / refVoltage;
+                f *= gamepad1.right_trigger > 0.1 ? 0.25 : 1;
                 Vec p = new Vec(-gamepad1.left_stick_y * f, -gamepad1.left_stick_x * f)
                         .rotate(-robot.drive.pose(t).h - PI/2);
                 double turn = -gamepad1.right_stick_x * f;

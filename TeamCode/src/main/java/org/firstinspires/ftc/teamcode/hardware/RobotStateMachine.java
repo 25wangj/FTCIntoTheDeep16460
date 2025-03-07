@@ -33,8 +33,8 @@ public class RobotStateMachine {
                 .addState(RobotStates.values())
                 .addTransition(EXTEND, EXTEND_GRAB, new SeqCommand(
                         new WaitCommand(t -> robot.arm.setArm(armRest(robot.arm.armPos().wristRot)),
-                                0.15, t -> robot.arm.setClaw(true), robot.arm),
-                        new WaitCommand(0.1, t -> robot.arm.setArm(armHalf(robot.arm.armPos().wristRot)))))
+                                0.1, t -> robot.arm.setClaw(true), robot.arm),
+                        new WaitCommand(0.25, t -> robot.arm.setArm(armHalf(robot.arm.armPos().wristRot)))))
                 .addTransition(EXTEND_GRAB, EXTEND,
                         new WaitCommand(t -> {
                             robot.arm.setClaw(false);
@@ -45,8 +45,8 @@ public class RobotStateMachine {
                         robot.lift.goBack()))
                 .addTransition(EXTEND, GRABBED, new SeqCommand(
                         new WaitCommand(t -> robot.arm.setArm(armRest(robot.arm.armPos().wristRot)),
-                                0.15, t -> robot.arm.setClaw(true), robot.arm),
-                        new WaitCommand(0.1, t -> robot.arm.setArm(armHalfGrabbed), robot.arm),
+                                0.1, t -> robot.arm.setClaw(true), robot.arm),
+                        new WaitCommand(0.25, t -> robot.arm.setArm(armHalfGrabbed), robot.arm),
                         robot.lift.turretTo(0),
                         FnCommand.once(t -> robot.arm.setArm(armGrabbed), robot.arm),
                         robot.lift.goBack()))
@@ -58,8 +58,8 @@ public class RobotStateMachine {
                         robot.arm.setGrab(((Pose)a[0]).h, robot.lift)))
                 .addTransition(EXTEND, BUCKET, a -> new SeqCommand(
                         new WaitCommand(t -> robot.arm.setArm(armRest(robot.arm.armPos().wristRot)),
-                                0.15, t -> robot.arm.setClaw(true), robot.arm),
-                        new WaitCommand(0.1, t -> robot.arm.setArm(armHalfGrabbed), robot.arm),
+                                0.1, t -> robot.arm.setClaw(true), robot.arm),
+                        new WaitCommand(0.25, t -> robot.arm.setArm(armHalfGrabbed), robot.arm),
                         robot.lift.turretTo(0),
                         new ParCommand(
                             robot.lift.goTo((LiftPosition)a[0], PIVOT_RETRACT),
@@ -97,16 +97,16 @@ public class RobotStateMachine {
                                 robot.arm.setArm(armWall2);
                                 robot.arm.setClaw(false);}, t -> t > robot.lift.restTime(), robot.arm))))
                 .addTransition(WALL, CHAMBER, a -> new SeqCommand(
-                        new WaitCommand(t -> robot.arm.setArm(armWall3), 0.15, robot.arm),
-                        new WaitCommand(t -> robot.arm.setClaw(true), 0.15, robot.arm),
+                        new WaitCommand(t -> robot.arm.setArm(armWall3), 0.1, robot.arm),
+                        new WaitCommand(t -> robot.arm.setClaw(true), 0.25, robot.arm),
                         robot.lift.goTo(liftWall2, PIVOT_FIRST),
                         new ParCommand(
                                 robot.lift.goTo(liftChamber, TURRET_FIRST),
                                 new WaitCommand(t -> robot.arm.setArm(armWall1), 0.25,
                                         t -> robot.arm.setArm(armChamber), robot.arm))))
                 .addTransition(WALL, GRABBED, a -> new SeqCommand(
-                        new WaitCommand(t -> robot.arm.setArm(armWall3), 0.15, robot.arm),
-                        new WaitCommand(t -> robot.arm.setClaw(true), 0.15, robot.arm),
+                        new WaitCommand(t -> robot.arm.setArm(armWall3), 0.1, robot.arm),
+                        new WaitCommand(t -> robot.arm.setClaw(true), 0.25, robot.arm),
                         robot.lift.goTo(liftWall2, PIVOT_FIRST),
                         new ParCommand(
                                 robot.lift.goBack(),
