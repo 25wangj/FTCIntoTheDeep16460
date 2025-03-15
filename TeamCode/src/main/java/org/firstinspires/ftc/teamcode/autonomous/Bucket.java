@@ -25,7 +25,7 @@ public class Bucket extends AbstractAutonomous {
     private AsymConstraints dropConstraints = new AsymConstraints(70, 80, 40);
     private AsymConstraints cameraConstraints = new AsymConstraints(70, 80, 50);
     private Pose drop1 = new Pose(56.5, 56.5, -3*PI/4);
-    private Pose drop2 = new Pose(60, 52, -2*PI/3);
+    private Pose drop2 = new Pose(59, 53, -2*PI/3);
     private Pose intake1 = new Pose(49, 34, -PI/2);
     private Pose intake2 = new Pose(59, 34, -PI/2);
     private Pose intake3 = new Pose(61, 35, -PI/4);
@@ -49,48 +49,24 @@ public class Bucket extends AbstractAutonomous {
     @Override
     public void initAutonomous() {
         start = new Pose(41, 64, -PI);
-        Command traj1 = new SeqCommand(
-                new ParCommand(
+        Command traj1 = new ParCommand(
                         new TrajCommandBuilder(robot.drive, start)
                                 .setMoveConstraints(grabConstraints)
                                 .lineTo(drop1)
                                 .marker(t -> curr = robot.drive.getTrajectory())
-                                .pause(0.15)
                                 .lineTo(intake1)
-                                .build(scheduler),
-                        new SeqCommand(
-                                robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket),
-                                FnCommand.until(t -> t > curr.tf() - 0.15),
-                                robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(2, 0, 0)))),
-                new ParCommand(
-                        new TrajCommandBuilder(robot.drive, intake1)
-                                .pause(0.15)
+                                .marker(t -> curr = robot.drive.getTrajectory())
                                 .lineTo(drop1)
                                 .marker(t -> curr = robot.drive.getTrajectory())
                                 .pause(0.15)
                                 .lineTo(intake2)
-                                .build(scheduler),
-                        new SeqCommand(
-                                robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
-                                FnCommand.until(t -> t > curr.tf()),
-                                robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(2, 0, 0)))),
-                new ParCommand(
-                        new TrajCommandBuilder(robot.drive, intake2)
-                                .pause(0.15)
-                                .setMoveConstraints(grabConstraints)
+                                .marker(t -> curr = robot.drive.getTrajectory())
                                 .lineTo(drop1)
                                 .marker(t -> curr = robot.drive.getTrajectory())
                                 .pause(0.15)
                                 .lineTo(intake3)
-                                .build(scheduler),
-                        new SeqCommand(
-                                robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
-                                FnCommand.until(t -> t > curr.tf()),
-                                robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(6, 0, -PI/4)))),
-                new ParCommand(
-                        new TrajCommandBuilder(robot.drive, intake3)
-                                .setMoveConstraints(grabConstraints)
-                                .pause(0.3)
+                                .marker(t -> curr = robot.drive.getTrajectory())
+                                .pause(0.15)
                                 .lineTo(drop2)
                                 .marker(t -> curr = robot.drive.getTrajectory())
                                 .pause(0.3)
@@ -99,9 +75,21 @@ public class Bucket extends AbstractAutonomous {
                                 .splineTo(park.vec(), park.h)
                                 .build(scheduler),
                         new SeqCommand(
+                                robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket),
+                                FnCommand.until(t -> t > curr.tf() - 0.15),
+                                robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(2, 0, 0)),
+                                FnCommand.until(t -> t > curr.tf() - 0.15),
                                 robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
                                 FnCommand.until(t -> t > curr.tf()),
-                                robot.stateMachine.getTransition(BUCKET, config == 1 ? CAMERA : GRABBED))));
+                                robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(2, 0, 0)),
+                                FnCommand.until(t -> t > curr.tf() - 0.15),
+                                robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
+                                FnCommand.until(t -> t > curr.tf()),
+                                robot.stateMachine.getTransition(BUCKET, EXTEND, new Pose(6, 0, -PI/4)),
+                                FnCommand.until(t -> t > curr.tf() - 0.15),
+                                robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
+                                FnCommand.until(t -> t > curr.tf()),
+                                robot.stateMachine.getTransition(BUCKET, config == 1 ? CAMERA : GRABBED, liftHighBucket)));
         Command traj2;
         if (config == 1) {
             traj2 = new RepeatCommand(
