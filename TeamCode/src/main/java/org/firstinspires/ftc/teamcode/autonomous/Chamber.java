@@ -19,18 +19,18 @@ import org.firstinspires.ftc.teamcode.movement.Vec;
 @Photon
 @Autonomous(name = "Chamber")
 public class Chamber extends AbstractAutonomous {
-    public static final AsymConstraints sampleConstraints = new AsymConstraints(70, 70, 30);
-    public static final AsymConstraints specConstraints = new AsymConstraints(70, 70, 40);
+    public static final AsymConstraints sampleConstraints = new AsymConstraints(70, 80, 30);
+    public static final AsymConstraints specConstraints = new AsymConstraints(70, 80, 40);
     private AsymConstraints sampleTurnConstraints = new AsymConstraints(4, 8, 4);
-    private Pose specimen1 = new Pose(-6.5, 39, -PI/2);
-    private Pose sample1 = new Pose(-32, 42, -3*PI/4);
-    private Pose sample2 = new Pose(-42.5, 42, -3*PI/4);
-    private Pose sample3 = new Pose(-52.5, 42, -3*PI/4);
+    private Pose specimen1 = new Pose(-6.5, 40, -PI/2);
+    private Pose sample1 = new Pose(-30.5, 42, -3*PI/4);
+    private Pose sample2 = new Pose(-40.5, 42, -3*PI/4);
+    private Pose sample3 = new Pose(-50.5, 42, -3*PI/4);
     private Pose drop1 = new Pose(-37.5, 48, -7*PI/6);
     private Pose drop2 = new Pose(-47.5, 48, -7*PI/6);
-    public static final Pose wall = new Pose(-29, 64, -PI/2);
+    public static final Pose wall = new Pose(-28, 64, -PI/2);
     public static final Pose specimen2 = new Pose(-4.5, 40, -PI/2);
-    private Pose bucket = new Pose(58, 56, -3*PI/4);
+    private Pose bucket = new Pose(53, 56, -3*PI/4);
     private Pose park = new Pose(-35, 60, -PI);
     private int config = 0;
     @Override

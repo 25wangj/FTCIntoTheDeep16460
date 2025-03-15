@@ -41,8 +41,8 @@ public class Arm implements Subsystem {
     public static final ArmPosition armChamber = new ArmPosition(armUp, 1.22, -PI);
     public static final ArmPosition armHalfGrabbed = new ArmPosition(armHalf, PI/2, -PI/2);
     public static final ArmPosition armGrabbed = new ArmPosition(armUp, PI/2, -PI/2);
-    public static final double clawOpen = 0.54;
-    public static final double clawClosed = 0.18;
+    public static final double clawOpen = 0.18;
+    public static final double clawClosed = 0.72;
     public static final double grabHyst = 0.262;
     private ServoImplEx arm;
     private ServoImplEx diffR;

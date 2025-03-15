@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.hardware;
 import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
 
+import static java.lang.Math.PI;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -21,12 +23,12 @@ import org.firstinspires.ftc.teamcode.movement.Pose;
 public class MecanumDrive extends MecanumDrivetrain {
     public static double trackWidth = 10.4;
     public static double driveKv = 0.011;
-    public static double driveKa = 0.001;
+    public static double driveKa = 0.0015;
     public static double driveKs = 0;
     public static double strafeMult = 1;
     public static final double otosDelay = 0.01;
-    public static final Pose otosOffset = new Pose(2.25, 0, 3.13);
-    public static final double linScalar = 1.012;
+    public static final Pose otosOffset = new Pose(-2.16, -3.38, -PI/2);
+    public static final double linScalar = 0.971;
     public static final double angScalar = 0.996;
     public static double xKp = 0.25;
     public static double xKi = 0;
@@ -37,7 +39,7 @@ public class MecanumDrive extends MecanumDrivetrain {
     public static double turnKp = 2;
     public static double turnKi = 0;
     public static double turnKd = 0;
-    public static final AsymConstraints moveConstraints = new AsymConstraints(70, 70, 50);
+    public static final AsymConstraints moveConstraints = new AsymConstraints(70, 80, 50);
     public static final AsymConstraints turnConstraints = new AsymConstraints(6, 12, 12);
     public static final double ptoRDown = 0.44;
     public static final double ptoRUp = 0.50;

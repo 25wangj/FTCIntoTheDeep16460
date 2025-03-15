@@ -1,17 +1,25 @@
 package org.firstinspires.ftc.teamcode.command;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class RaceCommand extends Command {
     private Command[] commands;
     public RaceCommand(Command... commands) {
+        List<Command> list = new ArrayList<>();
         for (Command command : commands) {
-            for (Subsystem subsystem : command.getSubsystems()) {
-                if (subsystems.contains(subsystem)) {
-                    throw new IllegalArgumentException("Subsystem used twice");
+            if (command != null) {
+                for (Subsystem subsystem : command.getSubsystems()) {
+                    if (subsystems.contains(subsystem)) {
+                        throw new IllegalArgumentException("Subsystem used twice");
+                    }
+                    subsystems.add(subsystem);
                 }
-                subsystems.add(subsystem);
+                cancelable = cancelable && command.cancelable;
+                list.add(command);
             }
-            cancelable = cancelable && command.cancelable;
         }
-        this.commands = commands;
+        this.commands = list.toArray(new Command[0]);
     }
     @Override
     public void init(double time) {

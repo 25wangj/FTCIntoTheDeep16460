@@ -73,7 +73,7 @@ public class TeleopTwoDriver extends CommandOpMode {
                 grabRot = ang.angle() - PI/2;
             }
             if (!scheduler.using(robot.drive)) {
-                double f = voltage / refVoltage;
+                double f = max(voltage / refVoltage, 1);
                 f *= gamepad1.right_trigger > 0.1 ? 0.25 : 1;
                 Vec p = new Vec(-gamepad1.left_stick_y * f, -gamepad1.left_stick_x * f)
                         .rotate(-robot.drive.pose(t).h - PI/2);

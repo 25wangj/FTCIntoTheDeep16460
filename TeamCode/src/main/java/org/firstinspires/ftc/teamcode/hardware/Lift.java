@@ -60,7 +60,6 @@ public class Lift implements Subsystem {
             return new LiftPosition(liftExt, turretAng, pivotAng);
         }
     }
-    public static final double liftToDrive = -1.66;
     public static final double liftXMin = 5;
     public static final double liftXMax = 24;
     public static final double liftYMax = 5.5;
@@ -78,10 +77,9 @@ public class Lift implements Subsystem {
     public static final LiftPosition climb5 = new LiftPosition(27, 0, 1);
     public static final LiftPosition climb6 = new LiftPosition(27, 0, 1.25);
     public static final LiftPosition climb7 = new LiftPosition(25.2, 0, 1.25);
-    public static final LiftPosition climb8 = new LiftPosition(21, 0, 1.25);
-    public static final LiftPosition climb9 = new LiftPosition(7.5, 0, pivotUp);
-    public static final LiftPosition climb10 = new LiftPosition(9.2, 0, pivotUp);
-    public static final LiftPosition climb11 = new LiftPosition(9.2, 0, 1);
+    public static final LiftPosition climb8 = new LiftPosition(7.5, 0, 1.25);
+    public static final LiftPosition climb9 = new LiftPosition(9.2, 0, pivotUp);
+    public static final LiftPosition climb10 = new LiftPosition(9.2, 0, 1);
     public static double pivotKp = 5;
     public static double pivotKi = 0;
     public static double pivotKd = 0;
@@ -95,7 +93,7 @@ public class Lift implements Subsystem {
             MotionState liftState = (MotionState)a[1];
             double fl = 1 + pivotKl * liftState.x;
             double fg = 1 + pivotKgd * liftState.x;
-            return new double[] {pivotKp * fl, pivotKi * fl, pivotKd * fl, (pivotState.x == pivotUp) ? 0.25 :
+            return new double[] {pivotKp * fl, pivotKi * fl, pivotKd * fl, (pivotState.x == pivotUp) ? liftState.x * 0.015 :
                     ((pivotKv * pivotState.v + pivotKa * pivotState.a) * fl + pivotKgs * cos(pivotState.x) * fg)};});
     public static final PidfCoefficients pivotClimbCoeffs = new PidfCoefficients(15, 0 ,0, a -> {
             MotionState pivotState = (MotionState)a[0];
@@ -114,9 +112,9 @@ public class Lift implements Subsystem {
             MotionState liftState = (MotionState)a[1];
             return (liftKgs + liftKgd * liftState.x) * sin(pivotState.x) +
                     liftKs * signum(liftState.v) + liftKv * liftState.v + liftKa * liftState.a;});
-    public static final PidfCoefficients liftClimbCoeffs = new PidfCoefficients(0.5, 0.5, 0, a -> {
+    public static final PidfCoefficients liftClimbCoeffs = new PidfCoefficients(0.8, 0.8, 0, a -> {
        MotionState liftState = (MotionState)a[1];
-       return -0.25 + 0.02 * liftState.v;});
+       return -0.4 + 0.03 * liftState.v;});
     public static double turretKp = 2;
     public static double turretKi = 1;
     public static double turretKd = 0;
@@ -264,7 +262,7 @@ public class Lift implements Subsystem {
                             t, new MotionState(pos.pivotAng)).tf() - t;
                     double pivotTi2 = max(liftProfile.tf() - min(dt4, 0.35), t);
                     pivotProfile = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
-                            pivotTi2, new MotionState(0));
+                            pivotTi2, new MotionState(pos.pivotAng));
                     break;
                 case LIFT_RETRACT:
                     turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
@@ -358,7 +356,7 @@ public class Lift implements Subsystem {
                     goTo(climb3, PIVOT_FIRST),
                     new WaitCommand(0.25, t -> {
                         pivotProfile = AsymProfile.extendAsym(pivotProfile,
-                                pivotConstraints, t, new MotionState(1.22));
+                                pivotConstraints, t, new MotionState(1.25));
                         liftConstraints = new AsymConstraints(10, 20, 20);})),
                 goTo(climb4, PIVOT_FIRST),
                 FnCommand.once(t -> {
@@ -373,15 +371,19 @@ public class Lift implements Subsystem {
                 FnCommand.once(t -> drive.setPto(true)),
                 goTo(climb7, PIVOT_FIRST),
                 FnCommand.once(t -> setClimb(true)),
-                goTo(climb8, PIVOT_FIRST),
+                new ParCommand(
+                        goTo(climb8, PIVOT_FIRST),
+                        new WaitCommand(0.5, t -> {
+                            pivotProfile = AsymProfile.extendAsym(pivotProfile,
+                                    pivotConstraints, t, new MotionState(pivotUp));
+                            liftConstraints = new AsymConstraints(10, 20, 20);})),
+                new WaitCommand(0.25),
                 goTo(climb9, PIVOT_FIRST),
-                goTo(climb10, PIVOT_FIRST),
                 FnCommand.once(t -> {
-                    liftConstraints = new AsymConstraints(10, 20, 20);
                     setClimb(false);
                     drive.setPto(false);
                     drive.setPowers(new Vec(0, 0), 0);}),
-                goTo(climb11, PIVOT_FIRST),
+                goTo(climb10, PIVOT_FIRST),
                 FnCommand.repeat(t -> {}));
     }
     @Override
@@ -411,10 +413,13 @@ public class Lift implements Subsystem {
             turretPidf.set(turretState.x);
             liftPidf.update(t, pos.liftExt, pivotState, liftState);
             turretPidf.update(t, pos.turretAng, turretState);
-            liftR.setPower(liftPidf.get() + turretPidf.get());
-            liftL.setPower(liftPidf.get() - turretPidf.get());
-            if (climbing) {
-                drive.setPowers(new Vec(liftPidf.get() * liftToDrive, 0), turretPidf.get() * liftToDrive);
+            if (!climbing) {
+                liftR.setPower(liftPidf.get() + turretPidf.get());
+                liftL.setPower(liftPidf.get() - turretPidf.get());
+            } else {
+                liftR.setPower(0);
+                liftL.setPower(0);
+                drive.setPowers(new Vec(-liftPidf.get(), 0), -turretPidf.get());
             }
         }
     }

@@ -1,13 +1,20 @@
 package org.firstinspires.ftc.teamcode.command;
+
+import java.util.ArrayList;
+
 public class SeqCommand extends Command {
     private Command[] commands;
     private int index;
     public SeqCommand(Command... commands) {
+        ArrayList<Command> list = new ArrayList<>();
         for (Command command : commands) {
-            subsystems.addAll(command.getSubsystems());
-            cancelable = cancelable && command.cancelable;
+            if (command != null) {
+                subsystems.addAll(command.getSubsystems());
+                cancelable = cancelable && command.cancelable;
+                list.add(command);
+            }
         }
-        this.commands = commands;
+        this.commands = list.toArray(new Command[0]);
     }
     @Override
     public void init(double time) {
