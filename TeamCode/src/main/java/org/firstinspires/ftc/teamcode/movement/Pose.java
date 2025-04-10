@@ -1,8 +1,7 @@
 package org.firstinspires.ftc.teamcode.movement;
+import static java.lang.Math.*;
 import org.ejml.simple.SimpleMatrix;
-import org.opencv.core.Point3;
-
-public class Pose {
+import org.opencv.core.Point3;public class Pose {
     public final double x;
     public final double y;
     public final double h;
@@ -23,7 +22,13 @@ public class Pose {
     public Vec vec() {
         return new Vec(x, y);
     }
+    public Pose inverse() {
+        return new Pose(vec().rotate(-h + PI), -h);
+    }
     public Pose add(Pose other) {
         return new Pose(vec().combo(1, other.vec().rotate(h), 1), h + other.h);
+    }
+    public boolean equals(Object o) {
+        return o instanceof Pose && ((Pose)o).x == x && ((Pose)o).y == y && ((Pose)o).h == h;
     }
 }

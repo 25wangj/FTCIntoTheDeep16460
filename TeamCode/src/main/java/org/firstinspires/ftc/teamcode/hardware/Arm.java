@@ -10,7 +10,8 @@ public class Arm implements Subsystem {
     public static class ArmPosition {
         public static final double armZero = 0.59;
         public static final double armRange = 2.59;
-        public static final double diffZero = 0.24;
+        public static final double diffRZero = 0.25;
+        public static final double diffLZero = 0.23;
         public static final double diffRange = 6.11;
         public static final double diffRatio = 0.833;
         public final double armAng;
@@ -24,8 +25,8 @@ public class Arm implements Subsystem {
             this.wristAng = wristAng;
             this.wristRot = wristRot;
             armPos = armAng / armRange + armZero;
-            diffRPos = ((wristAng + wristRot) * diffRatio + armAng) / diffRange + diffZero;
-            diffLPos = ((wristAng - wristRot) * diffRatio + armAng) / diffRange + diffZero;
+            diffRPos = ((wristAng + wristRot) * diffRatio + armAng) / diffRange + diffRZero;
+            diffLPos = ((wristAng - wristRot) * diffRatio + armAng) / diffRange + diffLZero;
         }
     }
     public static final double armUp = 0.35;

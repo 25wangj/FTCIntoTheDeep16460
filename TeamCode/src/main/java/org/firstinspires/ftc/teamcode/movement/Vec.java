@@ -34,4 +34,7 @@ public class Vec {
     public static Vec dir(double a) {
         return new Vec(cos(a), sin(a));
     }
+    public boolean equals(Object o) {
+        return o instanceof Vec && ((Vec)o).x == x && ((Vec)o).y == y;
+    }
 }

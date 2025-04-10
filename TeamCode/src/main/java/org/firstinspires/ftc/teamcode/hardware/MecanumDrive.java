@@ -19,8 +19,13 @@ import org.firstinspires.ftc.teamcode.control.PidfCoefficients;
 import org.firstinspires.ftc.teamcode.movement.CachingMotor;
 import org.firstinspires.ftc.teamcode.movement.MecanumDrivetrain;
 import org.firstinspires.ftc.teamcode.movement.Pose;
+import org.firstinspires.ftc.teamcode.movement.Trajectory;
+
 @Config
 public class MecanumDrive extends MecanumDrivetrain {
+    public enum PtoState {
+        UP, DOWN, PRESS
+    }
     public static double trackWidth = 10.4;
     public static double driveKv = 0.011;
     public static double driveKa = 0.0015;
@@ -41,10 +46,13 @@ public class MecanumDrive extends MecanumDrivetrain {
     public static double turnKd = 0;
     public static final AsymConstraints moveConstraints = new AsymConstraints(70, 80, 50);
     public static final AsymConstraints turnConstraints = new AsymConstraints(6, 12, 12);
-    public static final double ptoRDown = 0.44;
     public static final double ptoRUp = 0.50;
-    public static final double ptoLDown = 0.58;
+    public static final double ptoRDown = 0.44;
+    public static final double ptoRPress = 0.39;
     public static final double ptoLUp = 0.52;
+    public static final double ptoLDown = 0.58;
+    public static final double ptoLPress = 0.63;
+    public Trajectory curr = null;
     private Servo ptoR;
     private Servo ptoL;
     private Otos otos;
@@ -78,13 +86,24 @@ public class MecanumDrive extends MecanumDrivetrain {
             telemetry.update();
         }
         localizer = new OtosLocalizer(otos, otosDelay);
-        setPto(false);
+        setPto(PtoState.UP);
     }
-    public void setPto(boolean down) {
-        ptoR.setPosition(down ? ptoRDown : ptoRUp);
-        ptoL.setPosition(down ? ptoLDown : ptoLUp);
+    public void setPto(PtoState state) {
+        if (state == PtoState.UP) {
+            ptoR.setPosition(ptoRUp);
+            ptoL.setPosition(ptoLUp);
+        } else if (state == PtoState.DOWN) {
+            ptoR.setPosition(ptoRDown);
+            ptoL.setPosition(ptoLDown);
+        } else if (state == PtoState.PRESS) {
+            ptoR.setPosition(ptoRPress);
+            ptoL.setPosition(ptoLPress);
+        }
     }
     public Command setHeading(double h) {
         return FnCommand.once(t -> localizer.setPose(new Pose(pose(t).vec(), h)));
+    }
+    public Command saveTraj() {
+        return FnCommand.once(t -> curr = getTrajectory());
     }
 }

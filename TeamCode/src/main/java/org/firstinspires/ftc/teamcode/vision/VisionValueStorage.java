@@ -2,17 +2,37 @@ package org.firstinspires.ftc.teamcode.vision;
 import static java.lang.Math.*;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
-import java.util.ArrayList;
+import org.opencv.core.Rect;
+
 import java.util.List;
 public class VisionValueStorage {
+    public static class VisionValues {
+        public Point[][] pts;
+        public double minArea;
+        public Point p1;
+        public Point p2;
+        public VisionValues(Point[][] pts, double minArea, Point p1, Point p2) {
+            this.pts = pts;
+            this.minArea = minArea;
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+    }
+    public static final VisionValues bucketVals = new VisionValues(
+            new Point[][]{{new Point(11.7, 4.9) , new Point(18.5, 6.5) , new Point(27.3, 6.5)},
+                          {new Point(11.7, 0)   , new Point(18.5, 0)   , new Point(27.3, 0)},
+                          {new Point(11.7, -4.9), new Point(18.5, -6.5), new Point(27.3, -6.5)}},
+            0.0125, new Point(0, 0), new Point(1, 1));
+    public static final VisionValues chamberVals = new VisionValues(
+            new Point[][]{{new Point(14, 7.4) , new Point(20.8, 8.8) , new Point(30.4, 11),  new Point(46.8, 14.5)},
+                          {new Point(14, 0)   , new Point(20.8, 0)   , new Point(30.4, 0),   new Point(46.8, 0)},
+                          {new Point(14, -7.4), new Point(20.8, -8.8), new Point(30.4, -11), new Point(46.8, -14.5)}},
+            0.007, new Point(0.15, 0), new Point(1, 1));
     public static volatile boolean takeFrame = true;
-    public static volatile List<Point3> yellowPoses;
-    public static volatile List<Point3> colorPoses;
-    public static final Point center = new Point(0.25, 0.5);
-    public static final Point[][] pts = new Point[][]{{new Point(7, 5.1) , new Point(14, 5.8) , new Point(24, 7.4)},
-                                                      {new Point(7, 0)   , new Point(14, 0)   , new Point(24, 0)},
-                                                      {new Point(7, -5.1), new Point(14, -5.8), new Point(24, -7.4)}};
-    public static Point3 camToWorld(Point3 cam) {
+    public static volatile List<Point3> yellowPoints;
+    public static volatile List<Point3> colorPoints;
+    public static volatile VisionValues vals = bucketVals;
+    public static Point3 camToWorld(Point3 cam, Point[][] pts) {
         Point p1 = bilinear(new Point(cam.x + 0.01 * cos(cam.z), cam.y + 0.01 * sin(cam.z)), pts);
         Point p2 = bilinear(new Point(cam.x - 0.01 * cos(cam.z), cam.y - 0.01 * sin(cam.z)), pts);
         return new Point3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, atan2(p1.y - p2.y, p1.x - p2.x));

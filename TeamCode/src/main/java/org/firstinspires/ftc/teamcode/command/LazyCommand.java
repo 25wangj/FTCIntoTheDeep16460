@@ -5,7 +5,9 @@ public class LazyCommand extends Command {
     private Command instance = null;
     public LazyCommand(Supplier<Command> command) {
         this.command = command;
-        subsystems = command.get().subsystems;
+        Command test = command.get();
+        subsystems = test.subsystems;
+        cancelable = test.cancelable;
     }
     @Override
     public void init(double time) {

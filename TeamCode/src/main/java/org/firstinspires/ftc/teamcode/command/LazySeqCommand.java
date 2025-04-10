@@ -7,11 +7,12 @@ public class LazySeqCommand extends Command {
     private int index;
     public LazySeqCommand(Supplier<Command>... commands) {
         ArrayList<Supplier<Command>> list = new ArrayList<>();
-        for (Supplier<Command> command : commands) {
-            if (command != null) {
-                list.add(command);
-                subsystems.addAll(command.get().getSubsystems());
-                cancelable = cancelable && command.get().cancelable;
+        for (Supplier<Command> supplier : commands) {
+            Command test = supplier.get();
+            if (test != null) {
+                list.add(supplier);
+                subsystems.addAll(test.getSubsystems());
+                cancelable = cancelable && test.cancelable;
             }
         }
         this.commands = list.toArray(new Supplier[0]);

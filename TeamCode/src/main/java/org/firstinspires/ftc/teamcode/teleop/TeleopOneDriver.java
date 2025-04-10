@@ -47,17 +47,17 @@ public class TeleopOneDriver extends CommandOpMode {
                 if (robot.stateMachine.transition(EXTEND, EXTEND_GRAB)) {
                 } else if (robot.stateMachine.transition(EXTEND_GRAB, GRABBED)) {
                 } else if (robot.stateMachine.transition(BUCKET, EXTEND,
-                        new Pose(0, 0, grabRot - robot.drive.pose(t).h))) {
-                } else if (robot.stateMachine.transition(WALL, WALL, 0d)) {
-                } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(CHAMBER, WALL)) {}}),
+                        LiftPosition.inverse(new Vec(0, 0)), grabRot - robot.drive.pose(t).h)) {
+                } else if (robot.stateMachine.transition(WALL, WALL)) {
+                } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(CHAMBER, WALL, false)) {}}),
             RisingEdgeDetector.listen(() -> gamepad1.left_bumper, t -> {
                 if (robot.stateMachine.transition(EXTEND_GRAB, EXTEND)) {
                 } else if (robot.stateMachine.transition(GRABBED, EXTEND,
-                        new Pose(12, 0, grabRot - robot.drive.pose(t).h))) {
+                        LiftPosition.inverse(new Vec(12, 0)), grabRot - robot.drive.pose(t).h)) {
                 } else if (robot.stateMachine.transition(WALL, EXTEND,
-                        new Pose(0, 0, grabRot - robot.drive.pose(t).h))) {
+                        LiftPosition.inverse(new Vec(0, 0)), grabRot - robot.drive.pose(t).h, PIVOT_RETRACT, true)) {
                 } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(CHAMBER, EXTEND,
-                        new Pose(0, 0, grabRot - robot.drive.pose(t).h))) {}}),
+                        LiftPosition.inverse(new Vec(0, 0)), grabRot - robot.drive.pose(t).h, PIVOT_RETRACT, false)) {}}),
             RisingEdgeDetector.listen(() -> gamepad1.start, t -> {
                 if (robot.stateMachine.transition(GRABBED, CLIMB)) {
                 } else if (robot.stateMachine.transition(CLIMB, CLIMBED)) {}}),

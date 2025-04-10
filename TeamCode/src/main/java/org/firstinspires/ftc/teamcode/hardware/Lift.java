@@ -3,6 +3,9 @@ import static java.lang.Double.NaN;
 import static java.lang.Math.*;
 import static com.qualcomm.robotcore.util.Range.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.MovementType.*;
+import static org.firstinspires.ftc.teamcode.hardware.MecanumDrive.PtoState.DOWN;
+import static org.firstinspires.ftc.teamcode.hardware.MecanumDrive.PtoState.PRESS;
+import static org.firstinspires.ftc.teamcode.hardware.MecanumDrive.PtoState.UP;
 import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -65,17 +68,16 @@ public class Lift implements Subsystem {
     public static final double liftYMax = 5.5;
     public static final double pivotUp = 1.71;
     public static final LiftPosition liftHighBucket = new LiftPosition(31.5, 0, pivotUp);
-    public static final LiftPosition liftLowBucket = new LiftPosition (15, 0, pivotUp);
+    public static final LiftPosition liftLowBucket = new LiftPosition(15, 0, pivotUp);
     public static final LiftPosition liftWall1 = new LiftPosition(3.5, -PI/2, PI/2);
     public static final LiftPosition liftWall2 = new LiftPosition(3.5, -1.31, PI/2);
-    public static final LiftPosition liftChamber = new LiftPosition(18, 0, 0.81);
-    public static final LiftPosition liftCamera = new LiftPosition(14, 0, 0.52);
-    public static final LiftPosition climb1 = new LiftPosition(17.5, 0, pivotUp);
+    public static final LiftPosition liftChamber = new LiftPosition(18, 0, 0.80);
+    public static final LiftPosition climb1 = new LiftPosition(17.75, 0, pivotUp);
     public static final LiftPosition climb2 = new LiftPosition(16, 0, pivotUp);
     public static final LiftPosition climb3 = new LiftPosition(8, 0, pivotUp);
     public static final LiftPosition climb4 = new LiftPosition(9.2, 0, 1.25);
     public static final LiftPosition climb5 = new LiftPosition(27, 0, 1);
-    public static final LiftPosition climb6 = new LiftPosition(27, 0, 1.25);
+    public static final LiftPosition climb6 = new LiftPosition(27.25, 0, 1.25);
     public static final LiftPosition climb7 = new LiftPosition(25.2, 0, 1.25);
     public static final LiftPosition climb8 = new LiftPosition(7.5, 0, 1.25);
     public static final LiftPosition climb9 = new LiftPosition(9.2, 0, pivotUp);
@@ -110,6 +112,11 @@ public class Lift implements Subsystem {
         liftKp, liftKi, liftKd, a -> {
             MotionState pivotState = (MotionState)a[0];
             MotionState liftState = (MotionState)a[1];
+            if (liftState.x == 0) {
+                return -0.25;
+            } else if (liftState.x == liftHighBucket.liftExt) {
+                return 0.4;
+            }
             return (liftKgs + liftKgd * liftState.x) * sin(pivotState.x) +
                     liftKs * signum(liftState.v) + liftKv * liftState.v + liftKa * liftState.a;});
     public static final PidfCoefficients liftClimbCoeffs = new PidfCoefficients(0.8, 0.8, 0, a -> {
@@ -131,7 +138,7 @@ public class Lift implements Subsystem {
     public static double pivotAf = 15;
     public static final AsymConstraints pivotDefaultConstraints = new AsymConstraints(pivotVm, pivotAi, pivotAf);
     public static final AsymConstraints pivotClimbConstraints = new AsymConstraints(2, 8, 8);
-    public static final AsymConstraints pivotCameraConstraints = new AsymConstraints(2, 8, 8);
+    public static final AsymConstraints pivotCameraConstraints = new AsymConstraints(2, 12, 12);
     public static double liftVm = 75;
     public static double liftAi = 750;
     public static double liftAf = 250;
@@ -266,7 +273,7 @@ public class Lift implements Subsystem {
                     break;
                 case LIFT_RETRACT:
                     turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
-                            t, new MotionState(pos.turretAng));
+                            t, new MotionState(0));
                     liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
                             turretProfile.tf(), new MotionState(0));
                     double dt5 = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
@@ -313,12 +320,20 @@ public class Lift implements Subsystem {
                 goTo(new LiftPosition(0, 0, 0), MovementType.LIFT_FIRST),
                 FnCommand.once(t -> zeroTime = t));
     }
-    public Command specimen() {
+    public Command specimen(boolean push) {
         return new FnCommand(t -> {
-            pivotPidf.setCoeffs(new PidfCoefficients(50, 0, 0, a -> -0.5));
+            pivotPidf.setCoeffs(new PidfCoefficients(50, 0, 0, a -> -0.75));
+            liftPidf.setCoeffs(new PidfCoefficients(0.5, 0, 0, a -> 0.5));
+            if (push) {
+                turretPidf.setCoeffs(new PidfCoefficients(10, 1, 0, a -> 0.5));
+            }
             pivotProfile = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
-                    t, new MotionState(pivotProfile.state(t).x - 0.15));
-        }, t -> {}, (t, b) -> pivotPidf.setCoeffs(pivotCoeffs), t -> t > restTime(), this);
+                    t, new MotionState(pivotProfile.state(t).x - 0.1));
+        }, t -> {}, (t, b) -> {
+            pivotPidf.setCoeffs(pivotCoeffs);
+            liftPidf.setCoeffs(liftCoeffs);
+            turretPidf.setCoeffs(turretCoeffs);
+        }, t -> t > restTime() + 0.1, this);
     }
     public Command adjust(Vec v, double dt) {
         return FnCommand.once(t -> {
@@ -349,39 +364,41 @@ public class Lift implements Subsystem {
     }
     public Command climb() {
         return new SeqCommand(
-                FnCommand.once(t -> drive.setPto(true), drive),
+                FnCommand.once(t -> drive.setPto(DOWN), drive),
                 goTo(climb2, PIVOT_FIRST),
                 FnCommand.once(t -> setClimb(true)),
                 new ParCommand(
                     goTo(climb3, PIVOT_FIRST),
-                    new WaitCommand(0.25, t -> {
+                    new WaitCommand(0.25, t ->
                         pivotProfile = AsymProfile.extendAsym(pivotProfile,
-                                pivotConstraints, t, new MotionState(1.25));
-                        liftConstraints = new AsymConstraints(10, 20, 20);})),
+                                pivotConstraints, t, new MotionState(1.25)))),
+                FnCommand.once(t -> {
+                    liftConstraints = new AsymConstraints(10, 20, 20);
+                    drive.setPto(PRESS);}),
                 goTo(climb4, PIVOT_FIRST),
                 FnCommand.once(t -> {
                     setClimb(false);
-                    drive.setPto(false);
+                    drive.setPto(UP);
                     drive.setPowers(new Vec(-0.5, 0), 0);}),
                 new ParCommand(
                         goTo(climb5, PIVOT_FIRST),
                         new WaitCommand(0.25, t -> drive.setPowers(new Vec(0, 0), 0))),
-                new WaitCommand(0.25),
                 goTo(climb6, PIVOT_FIRST),
-                FnCommand.once(t -> drive.setPto(true)),
+                FnCommand.once(t -> drive.setPto(DOWN)),
                 goTo(climb7, PIVOT_FIRST),
                 FnCommand.once(t -> setClimb(true)),
                 new ParCommand(
                         goTo(climb8, PIVOT_FIRST),
-                        new WaitCommand(0.5, t -> {
+                        new WaitCommand(0.5, t ->
                             pivotProfile = AsymProfile.extendAsym(pivotProfile,
-                                    pivotConstraints, t, new MotionState(pivotUp));
-                            liftConstraints = new AsymConstraints(10, 20, 20);})),
-                new WaitCommand(0.25),
+                                    pivotConstraints, t, new MotionState(pivotUp)))),
+                new WaitCommand(0.25, t -> {
+                    liftConstraints = new AsymConstraints(10, 20, 20);
+                    drive.setPto(PRESS);}),
                 goTo(climb9, PIVOT_FIRST),
                 FnCommand.once(t -> {
                     setClimb(false);
-                    drive.setPto(false);
+                    drive.setPto(UP);
                     drive.setPowers(new Vec(0, 0), 0);}),
                 goTo(climb10, PIVOT_FIRST),
                 FnCommand.repeat(t -> {}));

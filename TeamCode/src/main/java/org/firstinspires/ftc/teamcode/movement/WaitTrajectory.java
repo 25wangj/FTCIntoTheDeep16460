@@ -4,6 +4,9 @@ public class WaitTrajectory implements Trajectory {
     private double seconds;
     private Pose pos;
     private Vec vel;
+    public WaitTrajectory(Pose pos, Vec vel) {
+        this(pos, vel, Double.NaN);
+    }
     public WaitTrajectory(Pose pos, Vec vel, double seconds) {
         this.seconds = seconds;
         this.pos = pos;
@@ -20,7 +23,7 @@ public class WaitTrajectory implements Trajectory {
     }
     @Override
     public double tf() {
-        return ti + seconds;
+        return Double.isNaN(seconds) ? Double.MAX_VALUE : ti + seconds;
     }
     @Override
     public double[] tfs() {
