@@ -37,9 +37,9 @@ public class Chamber extends AbstractAutonomous {
     private AsymConstraints turnToConstraints = new AsymConstraints(4, 8, 4);
     private AsymConstraints turnFromConstraints = new AsymConstraints(4, 8, 8);
     private Pose specimen1 = new Pose(-6.5, 39, -PI/2);
-    private Pose sample1 = new Pose(-30.5, 42, -3*PI/4);
-    private Pose sample2 = new Pose(-40.5, 42, -3*PI/4);
-    private Pose sample3 = new Pose(-50.5, 42, -3*PI/4);
+    private Pose sample1 = new Pose(-30.5, 42.5, -3*PI/4);
+    private Pose sample2 = new Pose(-40.5, 42.5, -3*PI/4);
+    private Pose sample3 = new Pose(-50.5, 42.5, -3*PI/4);
     private Pose drop1 = new Pose(-35.5, 46, -3.6);
     private Pose drop2 = new Pose(-45.5, 46, -3.6);
     public static final Pose wall1 = new Pose(-28, 64, -PI/2);
@@ -56,9 +56,6 @@ public class Chamber extends AbstractAutonomous {
                 .lineTo(specimen1)
                 .marker(robot.drive.saveTraj())
                 .setMoveConstraints(sampleConstraints)
-                .setTangent(5*PI/6)
-                .setVel(NaN)
-                .splineTo(new Pose(-15.5, 42, -3*PI/4), PI)
                 .lineTo(sample1)
                 .marker(robot.drive.saveTraj())
                 .pause(0.15)
@@ -68,14 +65,12 @@ public class Chamber extends AbstractAutonomous {
                 .setTurnConstraints(turnToConstraints)
                 .lineTo(sample2)
                 .marker(robot.drive.saveTraj())
-                .pause(0.15)
                 .setTurnConstraints(turnFromConstraints)
                 .lineTo(drop2)
                 .marker(robot.drive.saveTraj())
                 .setTurnConstraints(turnToConstraints)
                 .lineTo(sample3)
                 .marker(robot.drive.saveTraj())
-                .pause(0.15)
                 .resetConstraints()
                 .setMoveConstraints(specBackConstraints)
                 .setTangent(0)
@@ -87,7 +82,7 @@ public class Chamber extends AbstractAutonomous {
                     FnCommand.until(t -> t > robot.drive.curr.tf() - 0.25),
                     robot.stateMachine.getTransition(CHAMBER, EXTEND,
                             LiftPosition.inverse(new Vec(0, 0)), PI/4, PIVOT_RETRACT, false),
-                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.65),
+                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.75),
                     robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST),
                     FnCommand.until(t -> t > robot.drive.curr.tf()),
                     robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB),
@@ -99,9 +94,9 @@ public class Chamber extends AbstractAutonomous {
                             FnCommand.until(t -> t > robot.lift.restTime() - 0.15),
                             robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))),
                     robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0)), PIVOT_FIRST),
-                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.5),
+                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.6),
                     robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST),
-                    FnCommand.until(t -> t > robot.drive.curr.tf()),
+                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
                     robot.stateMachine.getTransition(EXTEND, EXTEND_GRAB),
                     robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0)), PIVOT_FIRST),
                     FnCommand.until(t -> t > robot.drive.curr.tf() - 0.4),
@@ -111,9 +106,9 @@ public class Chamber extends AbstractAutonomous {
                                     FnCommand.until(t -> t > robot.lift.restTime() - 0.15),
                                     robot.stateMachine.getTransition(EXTEND_GRAB, EXTEND))),
                     robot.lift.goTo(LiftPosition.inverse(new Vec(10, 0)), PIVOT_FIRST),
-                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.5),
+                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.6),
                     robot.lift.goTo(LiftPosition.inverse(new Vec(18, 0)), PIVOT_FIRST),
-                    FnCommand.until(t -> t > robot.drive.curr.tf()),
+                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
                     robot.stateMachine.getTransition(EXTEND, WALL)));
         dropTraj = FnCommand.once(t -> {}, robot.drive);
         Command traj2 = new SeqCommand(
@@ -121,7 +116,7 @@ public class Chamber extends AbstractAutonomous {
                 new WaitCommand(0.15),
                 robot.vision.takeFrame(visionChamber),
                 FnCommand.once(t -> {
-                    Pose sample = dtToLift.add(new Pose(sampleX + 8, 0, 0));
+                    Pose sample = new Pose(sampleX + 8, 0, 0);
                     List<Pose> valid = robot.vision.colorPoses.stream()
                             .map(a -> dtToLift.inverse().add(specimen2.inverse().add(a)))
                             .filter(a -> a.x - sampleX > liftXMin && a.x - sampleX < liftXMax && abs(a.y) < sampleYMax + liftYMax)
@@ -138,16 +133,20 @@ public class Chamber extends AbstractAutonomous {
                             robot.lift.goTo(LiftPosition.inverse(sampleLift.vec()), PIVOT_RETRACT),
                             robot.arm.setGrab(sampleLift.h, robot.lift),
                             new TrajCommandBuilder(robot.drive, specimen2)
-                                    .pause(0.5)
+                                    .pause(0.25)
                                     .lineTo(sampleDrive)
                                     .build(scheduler)),
                         new ParCommand(
-                                robot.stateMachine.getTransition(EXTEND, WALL),
                                 new SeqCommand(
-                                        FnCommand.until(t2 -> robot.lift.liftPos(t2).pivotAng != 0),
+                                        robot.stateMachine.getTransition(EXTEND, GRABBED),
+                                        FnCommand.until(t2 -> t2 > robot.drive.curr.tf() - 1),
+                                        robot.stateMachine.getTransition(GRABBED, WALL)),
+                                new SeqCommand(
+                                        FnCommand.until(t2 -> robot.lift.liftPos(t2).turretAng == 0 && robot.lift.liftPos(t2).liftExt < 6),
                                         new TrajCommandBuilder(robot.drive, sampleDrive)
                                                 .setMoveConstraints(specBackConstraints)
                                                 .lineTo(wall2)
+                                                .marker(robot.drive.saveTraj())
                                                 .pause(0.15)
                                                 .build(scheduler))));}),
                 new LazyCommand(() -> dropTraj));
@@ -160,8 +159,8 @@ public class Chamber extends AbstractAutonomous {
                             .build(scheduler)));
         scheduler.schedule(new SeqCommand(
                 traj1,
-                traj2,
-                new RepeatCommand(robot.stateMachine.getTransition(WALL, WALL), 3),
+                new RepeatCommand(traj2, 2),
+                new RepeatCommand(robot.stateMachine.getTransition(WALL, WALL), 2),
                 traj3,
                 FnCommand.once(t -> end())));
     }
