@@ -183,13 +183,14 @@ public class Lift implements Subsystem {
             liftProfile = new DelayProfile(0, new MotionState(0), 0);
             turretProfile = new DelayProfile(0, new MotionState(0), 0);
         } else {
-            zeroTime = 0;
-            pivotProfile = new DelayProfile(0, new MotionState(0), 0);
-            liftProfile = new DelayProfile(0, new MotionState(0), 0);
-            turretProfile = new DelayProfile(0, new MotionState(0), 0);
-            pivot.setPower(-0.15);
-            liftR.setPower(-0.25);
-            liftL.setPower(-0.25);
+            LiftPosition pos = LiftPosition.fromPos(pivot.motor.getCurrentPosition() - pivotOffset,
+                    liftR.motor.getCurrentPosition() - liftROffset,
+                    liftL.motor.getCurrentPosition() - liftLOffset);
+            zeroTime = NaN;
+            pivotProfile = new DelayProfile(0, new MotionState(pos.pivotAng), 0);
+            liftProfile = new DelayProfile(0, new MotionState(pos.liftExt), 0);
+            turretProfile = new DelayProfile(0, new MotionState(pos.turretAng), 0);
+            opMode.schedule(goBack());
         }
     }
     public LiftPosition liftPos(double t) {
@@ -245,8 +246,8 @@ public class Lift implements Subsystem {
                 case PIVOT_RETRACT:
                     turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
                             t, new MotionState(0));
-                    liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
-                            turretProfile.tf(), new MotionState(0));
+                    liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints, turretProfile.tf(),
+                            new MotionState(min(min(liftProfile.state(t).x, pos.liftExt), 2)));
                     double dt2 = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
                             t, new MotionState(pos.pivotAng)).tf() - t;
                     double dt3 = new AsymProfile(liftConstraints, 0, new MotionState(0),
@@ -274,8 +275,8 @@ public class Lift implements Subsystem {
                 case LIFT_RETRACT:
                     turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
                             t, new MotionState(0));
-                    liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints,
-                            turretProfile.tf(), new MotionState(0));
+                    liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints, turretProfile.tf(),
+                        new MotionState(min(min(liftProfile.state(t).x, pos.liftExt), 2)));
                     double dt5 = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
                             t, new MotionState(pos.pivotAng)).tf() - t;
                     double pivotTi3 = max(liftProfile.tf() - min(dt5, 0.35), t);

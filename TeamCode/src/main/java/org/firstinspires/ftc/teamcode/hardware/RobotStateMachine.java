@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.command.SeqCommand;
 import org.firstinspires.ftc.teamcode.command.StateMachine;
 import org.firstinspires.ftc.teamcode.command.StateMachineBuilder;
 import org.firstinspires.ftc.teamcode.command.WaitCommand;
+import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
 import org.firstinspires.ftc.teamcode.movement.Vec;
 
@@ -130,7 +131,8 @@ public class RobotStateMachine {
                         new SeqCommand(
                             new WaitCommand(t -> {
                                 robot.drive.setTrajectory(null);
-                                robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.15, t -> robot.drive.setPose(wall1)),
+                                robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.15,
+                                    t -> robot.drive.setPose((boolean)a[0] ? wall1 : new Pose(robot.drive.pose(t).x, wall1.y, wall1.h))),
                             new TrajCommandBuilder(robot.drive, wall1)
                                 .marker(1, 0, t -> {
                                     robot.drive.setTrajectory(null);
@@ -140,7 +142,6 @@ public class RobotStateMachine {
                                 .marker(robot.drive.saveTraj())
                                 .setMoveConstraints(specBackConstraints)
                                 .lineTo(wall2)
-                                .pause(0.15)
                                 .build(opMode.scheduler)),
                         new SeqCommand(
                             robot.stateMachine.getTransition(WALL, CHAMBER),
@@ -150,7 +151,8 @@ public class RobotStateMachine {
                         new SeqCommand(
                                 new WaitCommand(t -> {
                                     robot.drive.setTrajectory(null);
-                                    robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.15, t -> robot.drive.setPose(wall1)),
+                                    robot.drive.setPowers(new Vec(-0.5, 0), 0);}, 0.15,
+                                        t -> robot.drive.setPose((boolean)a[4] ? wall1 : new Pose(robot.drive.pose(t).x, wall1.y, wall1.h))),
                                 new TrajCommandBuilder(robot.drive, wall1)
                                         .setMoveConstraints(specToConstraints)
                                         .lineTo(specimen2.vec())

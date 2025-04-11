@@ -48,14 +48,14 @@ public class TeleopOneDriver extends CommandOpMode {
                 } else if (robot.stateMachine.transition(EXTEND_GRAB, GRABBED)) {
                 } else if (robot.stateMachine.transition(BUCKET, EXTEND,
                         LiftPosition.inverse(new Vec(0, 0)), grabRot - robot.drive.pose(t).h)) {
-                } else if (robot.stateMachine.transition(WALL, WALL)) {
+                } else if (robot.stateMachine.transition(WALL, WALL, true)) {
                 } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(CHAMBER, WALL, false)) {}}),
             RisingEdgeDetector.listen(() -> gamepad1.left_bumper, t -> {
                 if (robot.stateMachine.transition(EXTEND_GRAB, EXTEND)) {
                 } else if (robot.stateMachine.transition(GRABBED, EXTEND,
                         LiftPosition.inverse(new Vec(12, 0)), grabRot - robot.drive.pose(t).h)) {
                 } else if (robot.stateMachine.transition(WALL, EXTEND,
-                        LiftPosition.inverse(new Vec(0, 0)), grabRot - robot.drive.pose(t).h, PIVOT_RETRACT, true)) {
+                        LiftPosition.inverse(new Vec(0, 0)), grabRot - robot.drive.pose(t).h, PIVOT_RETRACT, true, true)) {
                 } else if (!scheduler.using(robot.drive) && robot.stateMachine.transition(CHAMBER, EXTEND,
                         LiftPosition.inverse(new Vec(0, 0)), grabRot - robot.drive.pose(t).h, PIVOT_RETRACT, false)) {}}),
             RisingEdgeDetector.listen(() -> gamepad1.start, t -> {
