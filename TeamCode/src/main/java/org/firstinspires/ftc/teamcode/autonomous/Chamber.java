@@ -48,7 +48,20 @@ public class Chamber extends AbstractAutonomous {
     private double sampleX = 6;
     private double sampleYMax = 4;
     private Pose park = new Pose(-35, 60, -PI/2);
+    private int config = 0;
     private Command dropTraj;
+    @Override
+    public void chooseConfig() {
+        while (config == 0 && !isStopRequested()) {
+            telemetry.addLine("Press X for cycles, Y for park");
+            telemetry.update();
+            if (gamepad1.x) {
+                config = 1;
+            } else if (gamepad1.y) {
+                config = 2;
+            }
+        }
+    }
     @Override
     public void initAutonomous() {
         start = new Pose(-6.5, 63, -PI/2);
@@ -74,6 +87,7 @@ public class Chamber extends AbstractAutonomous {
                 .setMoveConstraints(specBackConstraints)
                 .setTangent(0)
                 .splineTo(wall2, PI/3)
+                .pause(0.15)
                 .build(scheduler),
             new SeqCommand(
                     robot.stateMachine.getTransition(GRABBED, CHAMBER),
@@ -110,7 +124,8 @@ public class Chamber extends AbstractAutonomous {
                     robot.stateMachine.getTransition(EXTEND, WALL)));
         dropTraj = FnCommand.once(t -> {}, robot.drive);
         Command traj2 = new SeqCommand(
-                robot.stateMachine.getTransition(WALL, EXTEND, visionChamber.liftPos, 0d, TURRET_FIRST, true, false),
+                robot.stateMachine.getTransition(WALL, EXTEND,
+                        visionChamber.liftPos, 0d, TURRET_FIRST, true, false),
                 new WaitCommand(0.15),
                 robot.vision.takeFrame(visionChamber),
                 FnCommand.once(t -> {
@@ -118,7 +133,7 @@ public class Chamber extends AbstractAutonomous {
                     List<Pose> valid = robot.vision.colorPoses.stream()
                             .map(a -> dtToLift.inverse().add(specimen2.inverse().add(a)))
                             .filter(a -> a.x - sampleX > liftXMin && a.x - sampleX < liftXMax && abs(a.y) < sampleYMax + liftYMax)
-                            .sorted(Comparator.comparingDouble(a -> pow(a.x - 8, 2) + 0.25 * pow(a.y, 2)))
+                            .sorted(Comparator.comparingDouble(a -> pow(a.x - 8, 2) + pow(a.y, 2)))
                             .collect(Collectors.toList());
                     if (!valid.isEmpty()) {
                         sample = valid.get(0);
@@ -144,14 +159,21 @@ public class Chamber extends AbstractAutonomous {
                                                 .setMoveConstraints(specBackConstraints)
                                                 .lineTo(wall2)
                                                 .marker(robot.drive.saveTraj())
-                                                .pause(0.15)
                                                 .build(scheduler))));}),
                 new LazyCommand(() -> dropTraj));
+        Command traj3 = new SeqCommand(
+                robot.stateMachine.getTransition(WALL, EXTEND,
+                        visionChamber.liftPos, 0d, TURRET_FIRST, true, false),
+                new ParCommand(
+                        new TrajCommandBuilder(robot.drive, specimen2)
+                                .lineTo(park)
+                                .build(scheduler),
+                        robot.lift.goTo(LiftPosition.inverse(new Vec(0, 0)), PIVOT_RETRACT)));
         scheduler.schedule(new SeqCommand(
                 traj1,
-                new RepeatCommand(traj2, 2),
+                config == 1 ? new RepeatCommand(traj2, 2) : null,
                 new RepeatCommand(robot.stateMachine.getTransition(WALL, WALL, false), 3),
-                robot.stateMachine.getTransition(WALL, EXTEND, LiftPosition.inverse(new Vec(0, 0)), 0d, PIVOT_FIRST, true, false),
+                traj3,
                 FnCommand.once(t -> end())));
     }
 }

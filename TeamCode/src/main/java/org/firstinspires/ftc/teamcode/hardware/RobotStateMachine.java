@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.hardware.Arm.*;
 import static org.firstinspires.ftc.teamcode.hardware.Lift.MovementType.*;
 import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.*;
 import static java.lang.Math.*;
-
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
 import org.firstinspires.ftc.teamcode.command.ParCommand;
@@ -16,7 +15,6 @@ import org.firstinspires.ftc.teamcode.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.TrajCommandBuilder;
 import org.firstinspires.ftc.teamcode.movement.Vec;
-
 public class RobotStateMachine {
     public enum RobotStates {
         EXTEND, EXTEND_GRAB, GRABBED, BUCKET, WALL, CHAMBER, CLIMB, CLIMBED
@@ -79,13 +77,6 @@ public class RobotStateMachine {
                         new ParCommand(
                                 robot.lift.goTo((LiftPosition)a[0], LIFT_RETRACT),
                                 robot.arm.setGrab((double)a[1], robot.lift))))
-                .addTransition(BUCKET, GRABBED, new SeqCommand(
-                        new WaitCommand(t -> robot.arm.setArm(armBucket2), 0.1, robot.arm),
-                        new WaitCommand(t -> robot.arm.setClaw(false), 0.15, t -> robot.arm.setArm(armGrabbed)),
-                        robot.lift.pivotTo(PI/2),
-                        new ParCommand(
-                            robot.lift.goTo(LiftPosition.inverse(new Vec(0, 0)), LIFT_RETRACT),
-                            FnCommand.once(t -> robot.arm.setClaw(true)))))
                 .addTransition(GRABBED, WALL, a -> new ParCommand(
                             robot.lift.goTo(liftWall1, PIVOT_FIRST),
                                     new FnCommand(t -> robot.arm.setArm(armWall1), t -> {}, (t, b) -> {

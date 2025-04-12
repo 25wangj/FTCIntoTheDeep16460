@@ -66,8 +66,8 @@ public class Arm implements Subsystem {
             opMode.schedule(FnCommand.once(t -> setClaw(true)));
         } else {
             opMode.schedule(FnCommand.once(t -> {
-                armPos = armGrabbed;
-                setClaw(true);}));
+                armPos = armGrab(0);
+                setClaw(false);}));
         }
     }
     public void setArm(ArmPosition pos) {

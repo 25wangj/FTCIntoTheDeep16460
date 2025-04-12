@@ -247,7 +247,7 @@ public class Lift implements Subsystem {
                     turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
                             t, new MotionState(0));
                     liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints, turretProfile.tf(),
-                            new MotionState(min(min(liftProfile.state(t).x, pos.liftExt), 2)));
+                            new MotionState(min(min(liftProfile.state(t).x, pos.liftExt), 3)));
                     double dt2 = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
                             t, new MotionState(pos.pivotAng)).tf() - t;
                     double dt3 = new AsymProfile(liftConstraints, 0, new MotionState(0),
@@ -276,7 +276,7 @@ public class Lift implements Subsystem {
                     turretProfile = AsymProfile.extendAsym(turretProfile, turretConstraints,
                             t, new MotionState(0));
                     liftProfile = AsymProfile.extendAsym(liftProfile, liftConstraints, turretProfile.tf(),
-                        new MotionState(min(min(liftProfile.state(t).x, pos.liftExt), 2)));
+                        new MotionState(min(min(liftProfile.state(t).x, pos.liftExt), 3)));
                     double dt5 = AsymProfile.extendAsym(pivotProfile, pivotConstraints,
                             t, new MotionState(pos.pivotAng)).tf() - t;
                     double pivotTi3 = max(liftProfile.tf() - min(dt5, 0.35), t);

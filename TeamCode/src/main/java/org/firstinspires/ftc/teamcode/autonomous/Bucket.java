@@ -31,8 +31,8 @@ public class Bucket extends AbstractAutonomous {
     private AsymConstraints cameraConstraints = new AsymConstraints(70, 80, 50);
     private Pose drop1 = new Pose(56.5, 56.5, -3*PI/4);
     private Pose drop2 = new Pose(59, 56, -2*PI/3);
-    private Pose intake1 = new Pose(49, 34, -PI/2);
-    private Pose intake2 = new Pose(59, 34, -PI/2);
+    private Pose intake1 = new Pose(49, 35, -PI/2);
+    private Pose intake2 = new Pose(59, 35, -PI/2);
     private Pose intake3 = new Pose(61, 35, -PI/4);
     private Pose park = new Pose(26, 12, -2.88);
     private Pose sample = new Pose(12, 0, 0);
@@ -42,9 +42,7 @@ public class Bucket extends AbstractAutonomous {
     private double sampleYMax = 20;
     private Pose sub = park;
     private int config = 0;
-    private Trajectory curr;
     private Command dropTraj;
-    private int cycles = 4;
     @Override
     public void chooseConfig() {
         while (config == 0 && !isStopRequested()) {
@@ -89,85 +87,79 @@ public class Bucket extends AbstractAutonomous {
                         new SeqCommand(
                                 robot.stateMachine.getTransition(GRABBED, BUCKET, liftHighBucket),
                                 FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
-                                robot.stateMachine.getTransition(BUCKET, EXTEND, LiftPosition.inverse(new Vec(2, 0)), 0d),
-                                FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
+                                robot.stateMachine.getTransition(BUCKET, EXTEND, LiftPosition.inverse(new Vec(3, 0)), 0d),
+                                FnCommand.until(t -> t > robot.drive.curr.tf()),
                                 robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
                                 FnCommand.until(t -> t > robot.drive.curr.tf()),
-                                robot.stateMachine.getTransition(BUCKET, EXTEND, LiftPosition.inverse(new Vec(2, 0)), 0d),
-                                FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
+                                robot.stateMachine.getTransition(BUCKET, EXTEND, LiftPosition.inverse(new Vec(3, 0)), 0d),
+                                FnCommand.until(t -> t > robot.drive.curr.tf()),
                                 robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
                                 FnCommand.until(t -> t > robot.drive.curr.tf()),
                                 robot.stateMachine.getTransition(BUCKET, EXTEND, LiftPosition.inverse(new Vec(6, 0)), -PI/4),
                                 FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
                                 robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket)));
         dropTraj = FnCommand.once(t -> {}, robot.drive);
-        Command traj2;
-        if (config == 1) {
-            traj2 = new RepeatCommand(
-                new LazySeqCommand(
-                    () -> new ParCommand(
-                        new TrajCommandBuilder(robot.drive, drop2)
-                                .pause(0.15)
-                                .setMoveConstraints(cameraConstraints)
-                                .setTangent(drop2.h)
-                                .splineTo(sub.vec(), sub.h)
-                                .marker(robot.drive.saveTraj())
-                                .build(scheduler),
-                        new SeqCommand(
-                            robot.stateMachine.getTransition(BUCKET, EXTEND, visionBucket.liftPos, 0d),
-                            FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
-                            robot.vision.takeFrame(visionBucket),
-                            FnCommand.once(t -> {
-                                dropTraj = new ParCommand(
-                                        robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
-                                        new TrajCommandBuilder(robot.drive, sub)
-                                                .pause(0.15)
-                                                .setTangent(sub.h + PI)
-                                                .setMoveConstraints(dropConstraints)
-                                                .splineTo(drop2.vec(), drop2.h + PI)
-                                                .build(scheduler));
-                                List<Pose> valid = robot.vision.allPoses.stream()
-                                        .map(a -> dtToLift.inverse().add(sub.inverse().add(a)))
-                                        .filter(a -> a.x > liftXMin && a.x < liftXMax && abs(a.y) < liftYMax)
-                                        .sorted(Comparator.comparingDouble(a -> {
-                                            LiftPosition pos = LiftPosition.inverse(a.vec());
-                                            return new AsymProfile(liftDefaultConstraints, 0, new MotionState(pos.liftExt), new MotionState(12)).tf()
-                                                 + new AsymProfile(turretConstraints, 0, new MotionState(pos.turretAng), new MotionState(0)).tf();
-                                        }))
-                                        .collect(Collectors.toList());
-                                if (!valid.isEmpty()) {
-                                    sample = valid.get(0);
-                                    List<Pose> nexts = robot.vision.allPoses.stream()
-                                            .filter(a -> a.x > sampleXMin && a.x < sampleXMax
-                                                      && a.y > sampleYMin && a.y < sampleYMax
-                                                      && !sub.inverse().add(a).equals(sample))
-                                            .map(this::sub)
-                                            .sorted(Comparator.comparingDouble(a -> pow(park.y - a.y, 2) + 100 * pow(park.h - a.h, 2)))
-                                            .collect(Collectors.toList());
-                                    if (!nexts.isEmpty()) {
-                                        sub = nexts.get(0);
-                                    } else {
-                                        sub = park;
-                                    }
-                                } else {
-                                    sample = new Pose(12, 0, 0);
-                                    sub = park;}}),
-                            new LazyCommand(() -> new ParCommand(
-                                robot.lift.goTo(LiftPosition.inverse(sample.vec()), TURRET_FIRST, pivotCameraConstraints),
-                                robot.arm.setGrab(sample.h, robot.lift))))),
-                        () -> dropTraj), cycles);
-        } else {
-            traj2 = null;
-        }
-        Command traj3 = new ParCommand(
+        Command traj2 = new LazySeqCommand(
+            () -> new ParCommand(
                 new TrajCommandBuilder(robot.drive, drop2)
+                        .pause(0.15)
+                        .setMoveConstraints(cameraConstraints)
                         .setTangent(drop2.h)
-                        .splineTo(park.vec(), park.h)
+                        .splineTo(sub.vec(), sub.h)
+                        .marker(robot.drive.saveTraj())
                         .build(scheduler),
-                robot.stateMachine.getTransition(BUCKET, GRABBED));
+                new SeqCommand(
+                    robot.stateMachine.getTransition(BUCKET, EXTEND, visionBucket.liftPos, 0d),
+                    FnCommand.until(t -> t > robot.drive.curr.tf() - 0.15),
+                    robot.vision.takeFrame(visionBucket),
+                    FnCommand.once(t -> {
+                        dropTraj = new ParCommand(
+                                robot.stateMachine.getTransition(EXTEND, BUCKET, liftHighBucket),
+                                new TrajCommandBuilder(robot.drive, sub)
+                                        .pause(0.15)
+                                        .setTangent(sub.h + PI)
+                                        .setMoveConstraints(dropConstraints)
+                                        .splineTo(drop2.vec(), drop2.h + PI)
+                                        .build(scheduler));
+                        List<Pose> valid = robot.vision.allPoses.stream()
+                                .map(a -> dtToLift.inverse().add(sub.inverse().add(a)))
+                                .filter(a -> a.x > liftXMin && a.x < liftXMax && abs(a.y) < liftYMax)
+                                .sorted(Comparator.comparingDouble(a -> {
+                                    LiftPosition pos = LiftPosition.inverse(a.vec());
+                                    return new AsymProfile(liftDefaultConstraints, 0, new MotionState(pos.liftExt), new MotionState(12)).tf()
+                                         + new AsymProfile(turretConstraints, 0, new MotionState(pos.turretAng), new MotionState(0)).tf();
+                                }))
+                                .collect(Collectors.toList());
+                        if (!valid.isEmpty()) {
+                            sample = valid.get(0);
+                            List<Pose> nexts = robot.vision.allPoses.stream()
+                                    .filter(a -> a.x > sampleXMin && a.x < sampleXMax
+                                              && a.y > sampleYMin && a.y < sampleYMax
+                                              && !sub.inverse().add(a).equals(sample))
+                                    .map(this::sub)
+                                    .sorted(Comparator.comparingDouble(a -> pow(park.y - a.y, 2) + 100 * pow(park.h - a.h, 2)))
+                                    .collect(Collectors.toList());
+                            if (!nexts.isEmpty()) {
+                                sub = nexts.get(0);
+                            } else {
+                                sub = park;
+                            }
+                        } else {
+                            sample = new Pose(12, 0, 0);
+                            sub = park;}}),
+                    new LazyCommand(() -> new ParCommand(
+                        robot.lift.goTo(LiftPosition.inverse(sample.vec()), TURRET_FIRST, pivotCameraConstraints),
+                        robot.arm.setGrab(sample.h, robot.lift))))),
+            () -> dropTraj);
+        Command traj3 = new ParCommand(
+            new TrajCommandBuilder(robot.drive, drop2)
+                    .setTangent(drop2.h)
+                    .splineTo(park.vec(), park.h)
+                    .build(scheduler),
+            robot.stateMachine.getTransition(BUCKET, EXTEND, LiftPosition.inverse(new Vec(0, 0)), 0d));
         scheduler.schedule(new SeqCommand(
                 traj1,
-                traj2,
+                config == 1 ? new RepeatCommand(traj2, 4) : null,
                 traj3,
                 FnCommand.once(t -> end())));
     }

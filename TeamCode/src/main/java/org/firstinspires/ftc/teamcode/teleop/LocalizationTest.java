@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.MecanumDrive;
 import org.firstinspires.ftc.teamcode.movement.Pose;
 import org.firstinspires.ftc.teamcode.movement.Vec;
 @Photon
+@Disabled
 @TeleOp(name = "LocalizationTest")
 public class LocalizationTest extends CommandOpMode { @Override
     public void initOpMode() {

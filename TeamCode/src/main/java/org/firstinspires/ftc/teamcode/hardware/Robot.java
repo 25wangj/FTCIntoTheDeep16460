@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode.hardware;
+import static org.firstinspires.ftc.teamcode.hardware.RobotStateMachine.RobotStates.*;
 import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
-
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.StateMachine;
-import org.firstinspires.ftc.teamcode.movement.Pose;
-
 public class Robot {
     public final MecanumDrive drive;
     public final Lift lift;
@@ -17,6 +15,6 @@ public class Robot {
         lift = new Lift(this, opMode, auto);
         arm = new Arm(opMode, auto);
         vision = new Vision(this, opMode, side);
-        stateMachine = RobotStateMachine.get(opMode, this, RobotStateMachine.RobotStates.GRABBED);
+        stateMachine = RobotStateMachine.get(opMode, this, auto ? GRABBED : EXTEND);
     }
 }

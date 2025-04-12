@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.hardware.ValueStorage.*;
 import static org.firstinspires.ftc.teamcode.hardware.Vision.*;
 import static org.firstinspires.ftc.teamcode.vision.VisionValueStorage.*;
 import com.outoftheboxrobotics.photoncore.Photon;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.command.CommandOpMode;
 import org.firstinspires.ftc.teamcode.command.FnCommand;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.command.RisingEdgeDetector;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 
 @Photon
+@Disabled
 @TeleOp(name = "VisionTest")
 public class VisionTest extends CommandOpMode {
     private Robot robot;
